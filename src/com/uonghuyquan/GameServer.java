@@ -2,14 +2,14 @@ package com.uonghuyquan;
 
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
-import com.daohoangson.GameException;
 import com.daohoangson.GameIO;
-import com.daohoangson.GameMessage;
 
-public class GameServer {
-	private HashMap<String, GameUser> users = new HashMap<String, GameUser>();
+public class GameServer extends GameUserList {
+	private List<GameRoom> rooms = new ArrayList<GameRoom>();
 
 	public GameServer(int port) {
 		try {
@@ -31,33 +31,32 @@ public class GameServer {
 		}
 	}
 
-	public void addUser(GameUser user) throws GameException {
-		String username = user.getUsername();
-		if (users.containsKey(username)) {
-			throw new GameException(GameMessage.E_LOGGEDIN_USERNAME);
-		}
-		users.put(username, user);
-		GameIO.debug("Added " + user);
+	public void addRoom(GameRoom room) {
+		rooms.add(room);
 	}
 
-	public boolean removeUser(GameUser user) {
-		String username = user.getUsername();
-		if (username != null) {
-			if (users.containsKey(username)) {
-				users.remove(username);
-				GameIO.debug("Removed " + user);
-				return true;
-			}
+	public boolean removeRoom(GameRoom room) {
+		if (rooms.contains(room)) {
+			rooms.remove(room);
+			return true;
 		}
 
 		return false;
 	}
 
-	public GameUser getUser(String username) {
-		if (users.containsKey(username)) {
-			return users.get(username);
-		} else {
-			return null;
+	public GameRoom getRoom(int roomId) {
+		Iterator<GameRoom> i = rooms.iterator();
+		while (i.hasNext()) {
+			GameRoom room = i.next();
+			if (room.getId() == roomId) {
+				return room;
+			}
 		}
+
+		return null;
+	}
+
+	public int getRooms() {
+		return rooms.size();
 	}
 }

@@ -271,7 +271,8 @@ public class GameMessage {
 		result += GameMessage.lookupCodeToString(code) + " "
 				+ GameMessage.VERSION_STRING + "\n";
 
-		if (params.size() > 0 || forceCount) {
+		if (!params.containsKey("Params-Count")
+				&& (params.size() > 0 || forceCount)) {
 			result += "Params-Count: " + (1 + params.size()) + "\n";
 		}
 
