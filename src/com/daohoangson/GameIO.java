@@ -16,13 +16,13 @@ public class GameIO {
 		out = new PrintWriter(socket.getOutputStream());
 		in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
-		GameIO.debug("GameIO created", 3);
+		GameIO.debug("GameIO created", 2);
 	}
 
 	public void write(GameMessage m) throws IOException {
 		out.print(m.prepare());
 		out.flush();
-		GameIO.debug("Sent:\n" + m.toString(), 2);
+		GameIO.debug("Sent:\n" + m.toString(), 3);
 	}
 
 	public GameMessage read() throws IOException {
@@ -61,7 +61,7 @@ public class GameIO {
 			}
 		}
 
-		GameIO.debug("Received:\n" + m.toString(), 2);
+		GameIO.debug("Received:\n" + m.toString(), 3);
 		return m;
 	}
 

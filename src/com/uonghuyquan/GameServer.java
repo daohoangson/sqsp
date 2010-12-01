@@ -56,7 +56,20 @@ public class GameServer extends GameUserList {
 		return null;
 	}
 
+	public GameRoom getRoomByOffset(int roomOffset) {
+		if (rooms.size() > roomOffset) {
+			return rooms.get(roomOffset);
+		}
+
+		return null;
+	}
+
 	public int getRooms() {
 		return rooms.size();
+	}
+
+	@Override
+	public String toString() {
+		return "Server";
 	}
 }

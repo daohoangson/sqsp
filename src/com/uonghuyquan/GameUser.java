@@ -31,8 +31,12 @@ public class GameUser {
 			}
 		} catch (Exception e) {
 			// TODO: make sure to clean up stuff here, this is the last barrier
+			// so.. don't mess up
 			GameIO.debug(e.toString());
 			GameIO.debug("Connection lost. Cleaning stuff from the Server", 1);
+			if (room != null) {
+				room.removeUser(this);
+			}
 			server.removeUser(this);
 		}
 	}
@@ -70,6 +74,14 @@ public class GameUser {
 		}
 	}
 
+	private void joinRoom(GameRoom room) throws GameException {
+		if (this.room != null) {
+			this.room.removeUser(this);
+		}
+		room.addUser(this);
+		this.room = room;
+	}
+
 	private void loop() throws IOException, GameException {
 		while (true) {
 			GameIO.debug("Waiting in loop", 4);
@@ -78,20 +90,50 @@ public class GameUser {
 
 			switch (m.getCode()) {
 			case GameMessage.ROOMS:
-				int rooms = server.getRooms();
 				response = new GameMessage(GameMessage.OK);
-				response.addParam("Rooms", rooms);
+				response.addParam("Rooms", server.getRooms());
 				io.write(response);
 				break;
 			case GameMessage.ROOM_MAKE:
-				GameRoom room = new GameRoom(server);
-				if (this.room != null) {
-					room.removeUser(this);
-				}
-				room.addUser(this);
+				GameRoom room = new GameRoom(server, m
+						.getParamAsInt("Room-Size"));
+				joinRoom(room);
+
 				response = new GameMessage(GameMessage.OK);
 				response.addParam("RoomID", room.getId());
 				io.write(response);
+				break;
+			case GameMessage.ROOM_INFO:
+			case GameMessage.ROOM_JOIN:
+				GameRoom roomInfo;
+				if (m.getCode() == GameMessage.ROOM_INFO) {
+					int roomOffset = m.getParamAsInt("Room-Offset");
+					roomInfo = server.getRoomByOffset(roomOffset);
+				} else {
+					int roomId = m.getParamAsInt("RoomID");
+					roomInfo = server.getRoom(roomId);
+					if (roomInfo != null) {
+						joinRoom(roomInfo);
+					}
+				}
+
+				if (roomInfo != null) {
+					response = new GameMessage(GameMessage.OK);
+					response.addParam("RoomID", roomInfo.getId());
+					response.addParam("Room-Size", roomInfo.getSize());
+					response.addParam("Users", roomInfo.getUsers());
+					for (int i = 0; i < roomInfo.getUsers(); i++) {
+						GameUser user = roomInfo.getUserByOffset(i);
+						if (user != null) {
+							response.addParam("User" + (i + 1), user
+									.getUsername());
+						}
+					}
+					response.addParam("Status", roomInfo.getStatus());
+					io.write(response);
+				} else {
+					io.writeError(GameMessage.E_ROOM_NOT_FOUND);
+				}
 				break;
 			}
 		}

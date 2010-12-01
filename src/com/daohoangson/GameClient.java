@@ -48,8 +48,9 @@ public class GameClient {
 		return 0;
 	}
 
-	public int roomMake() {
+	public int roomMake(int size) {
 		GameMessage roomMake = new GameMessage(GameMessage.ROOM_MAKE);
+		roomMake.addParam("Room-Size", size);
 		GameMessage response = sendMessage(roomMake);
 
 		if (isOK(response)) {
@@ -57,6 +58,30 @@ public class GameClient {
 		}
 
 		return 0;
+	}
+
+	public GameParamList roomInfo(int roomOffset) {
+		GameMessage roomInfo = new GameMessage(GameMessage.ROOM_INFO);
+		roomInfo.addParam("Room-Offset", roomOffset);
+		GameMessage response = sendMessage(roomInfo);
+
+		if (isOK(response)) {
+			return response;
+		}
+
+		return null;
+	}
+
+	public GameParamList roomJoin(int roomId) {
+		GameMessage roomJoin = new GameMessage(GameMessage.ROOM_JOIN);
+		roomJoin.addParam("RoomID", roomId);
+		GameMessage response = sendMessage(roomJoin);
+
+		if (isOK(response)) {
+			return response;
+		}
+
+		return null;
 	}
 
 	private GameMessage sendMessage(GameMessage m) {

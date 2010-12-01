@@ -7,7 +7,7 @@ import com.daohoangson.GameIO;
 import com.daohoangson.GameMessage;
 
 public class GameUserList {
-	private HashMap<String, GameUser> users = new HashMap<String, GameUser>();
+	protected HashMap<String, GameUser> users = new HashMap<String, GameUser>();
 
 	public void addUser(GameUser user) throws GameException {
 		String username = user.getUsername();
@@ -15,7 +15,7 @@ public class GameUserList {
 			throw new GameException(GameMessage.E_LOGGEDIN_USERNAME);
 		}
 		users.put(username, user);
-		GameIO.debug("Added " + user);
+		debug("Added " + user);
 	}
 
 	public boolean removeUser(GameUser user) {
@@ -23,7 +23,7 @@ public class GameUserList {
 		if (username != null) {
 			if (users.containsKey(username)) {
 				users.remove(username);
-				GameIO.debug("Removed " + user);
+				debug("Removed " + user);
 				return true;
 			}
 		}
@@ -37,5 +37,21 @@ public class GameUserList {
 		} else {
 			return null;
 		}
+	}
+
+	public GameUser getUserByOffset(int userOffset) {
+		if (userOffset < users.size()) {
+			return users.values().toArray(new GameUser[0])[userOffset];
+		} else {
+			return null;
+		}
+	}
+
+	public int getUsers() {
+		return users.size();
+	}
+
+	private void debug(String message) {
+		GameIO.debug("[" + this + "] " + message);
 	}
 }

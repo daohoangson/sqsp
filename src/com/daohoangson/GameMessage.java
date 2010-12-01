@@ -1,12 +1,10 @@
 package com.daohoangson;
 
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map.Entry;
 
-public class GameMessage {
+public class GameMessage extends GameParamList {
 	private int code = 0;
-	private HashMap<String, String> params = new HashMap<String, String>();
 
 	public final static String VERSION_STRING = "SQSP/1.0";
 
@@ -49,6 +47,7 @@ public class GameMessage {
 	public final static int E_INVALID_USERNAME = 101;
 	public final static int E_INVALID_PASSWORD = 102;
 	public final static int E_LOGGEDIN_USERNAME = 103;
+	public final static int E_ROOM_NOT_FOUND = 104;
 
 	/* Error Code - END */
 
@@ -228,41 +227,11 @@ public class GameMessage {
 		}
 	}
 
-	public void addParam(String key, String value) {
-		params.put(key, value);
-		GameIO.debug("GameMessage addParam " + key + " " + value, 1);
-	}
-
-	public void addParam(String key, int value) {
-		params.put(key, "" + value);
-	}
-
 	public void addParam(String line) {
 		String[] parts = line.split(":");
 		if (parts.length == 2) {
 			addParam(parts[0].trim(), parts[1].trim());
 		}
-	}
-
-	public String getParam(String key) {
-		return params.get(key);
-	}
-
-	public int getParamAsInt(String key, int defaultValue) {
-		String value = params.get(key);
-		if (value == null) {
-			return defaultValue;
-		} else {
-			return Integer.valueOf(value);
-		}
-	}
-
-	public int getParamAsInt(String key) {
-		return getParamAsInt(key, 0);
-	}
-
-	public int getParamsCount() {
-		return params.size();
 	}
 
 	public String prepare(boolean forceCount) {
