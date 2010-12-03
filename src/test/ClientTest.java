@@ -4,11 +4,12 @@ import java.util.Scanner;
 
 import com.daohoangson.GameClient;
 import com.daohoangson.GameIO;
+import com.daohoangson.GameMessage;
 import com.daohoangson.GameParamList;
 
 public class ClientTest {
 	public static void main(String[] args) {
-		GameClient gc = new GameClient("192.168.1.104", GameIO.DEFAULT_PORT);
+		GameClient gc = new GameClient("localhost", GameIO.DEFAULT_PORT);
 		if (gc.login(args[0], "123456")) {
 			System.out.println("Logged In");
 			int rooms = gc.rooms();
@@ -20,9 +21,13 @@ public class ClientTest {
 				gc.roomJoin(roomInfo.getParamAsInt("RoomID"));
 			}
 			if (gc.getRoomId() > 0) {
-				// joined a room
-				// gc.waiting();
+				gc.setReady(true);
+				while (gc.getRoomStatus() == GameMessage.RS_WAITING) {
+					// wait
+				}
+				System.out.println("PLAYING NOW!");
 			}
+			System.exit(-1);
 		}
 
 		Scanner sc = new Scanner(System.in);

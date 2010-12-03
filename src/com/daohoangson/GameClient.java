@@ -227,6 +227,8 @@ public class GameClient extends GameEventSource implements Runnable {
 				if (statusOld != statusNew) {
 					if (statusNew == GameMessage.RS_PLAYING) {
 						fireGameEvent(GameEvent.STARTED);
+					} else if (statusNew == GameMessage.RS_WAITING) {
+						fireGameEvent(GameEvent.WAITING);
 					}
 				}
 			}
@@ -266,11 +268,7 @@ public class GameClient extends GameEventSource implements Runnable {
 	}
 
 	public void setReady(boolean ready) {
-		if (host) {
-			this.ready = true;
-		} else {
-			this.ready = ready;
-		}
+		this.ready = ready;
 	}
 
 	public boolean isReady() {
@@ -295,5 +293,9 @@ public class GameClient extends GameEventSource implements Runnable {
 
 	public boolean getRoomReady(int offset) {
 		return Integer.valueOf(getRoomInfo("Ready" + offset)) == 1;
+	}
+
+	public int getRoomStatus() {
+		return Integer.valueOf(getRoomInfo("Status"));
 	}
 }

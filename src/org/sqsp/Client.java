@@ -1,16 +1,15 @@
 package org.sqsp;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
 import com.daohoangson.GameClient;
 import com.daohoangson.GameIO;
+import com.daohoangson.GameMessage;
 import com.daohoangson.GameParamList;
 import com.daohoangson.event.GameEvent;
 import com.daohoangson.event.GameEventListener;
 import com.tranvietson.LoginUI;
+import com.tranvietson.UIManager;
 
-public class Client implements ActionListener, GameEventListener {
+public class Client implements GameEventListener, UIManager {
 	private GameClient gameClient;
 	private LoginUI loginUI = null;
 
@@ -20,38 +19,23 @@ public class Client implements ActionListener, GameEventListener {
 	}
 
 	public void doLogin() {
-		GameIO.debug("Client.doLogin()");
-		loginUI = new LoginUI();
-		loginUI.setVisible(true);
-		loginUI.onLogin(this);
+		if (gameClient.getUsername() == null) {
+			// only start login procedure if the user hasn't logged in yet
+			GameIO.debug("Client.doLogin()");
+			loginUI = new LoginUI();
+			loginUI.setVisible(true);
+		}
 	}
 
 	public void doWait() {
-		GameIO.debug("Client.doWait()");
+		if (gameClient.getRoomId() > 0
+				&& gameClient.getRoomStatus() == GameMessage.RS_WAITING) {
+			GameIO.debug("Client.doWait()");
+		}
 	}
 
-	public static void main(String[] args) {
-		Client client;
-		if (args.length == 0) {
-			client = new Client("localhost", GameIO.DEFAULT_PORT);
-		} else if (args.length == 1) {
-			client = new Client(args[0], GameIO.DEFAULT_PORT);
-		} else {
-			client = new Client(args[1], Integer.valueOf(args[1]));
-		}
-		client.doLogin();
-	}
-
-	@Override
-	public void actionPerformed(ActionEvent ae) {
-		if (loginUI != null) {
-			String username = loginUI.getUsername();
-			String password = loginUI.getPassword();
-
-			if (gameClient.login(username, password)) {
-				loginUI.setVisible(false);
-			}
-		}
+	public void doPlay() {
+		GameIO.debug("Client.doPlay()");
 	}
 
 	@Override
@@ -66,10 +50,51 @@ public class Client implements ActionListener, GameEventListener {
 				GameParamList roomInfo = gameClient.roomInfo(0);
 				gameClient.roomJoin(roomInfo.getParamAsInt("RoomID"));
 			}
+			gameClient.setReady(true);
 			break;
 		case GameEvent.JOINED_ROOM:
+		case GameEvent.WAITING:
 			doWait();
 			break;
+		case GameEvent.STARTED:
+			doPlay();
+			break;
 		}
+	}
+
+	@Override
+	public void onFlip(int cardId) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void onLogin(String username, String password) {
+		if (loginUI != null && loginUI.isVisible()
+				&& gameClient.login(username, password)) {
+			// only login when the loginUI is visible
+			loginUI.setVisible(false);
+			loginUI = null;
+		}
+	}
+
+	@Override
+	public void onReadyChange(boolean ready) {
+		if (gameClient.getRoomId() > 0) {
+			// only set ready if we are in a room
+			gameClient.setReady(ready);
+		}
+	}
+
+	public static void main(String[] args) {
+		Client client;
+		if (args.length == 0) {
+			client = new Client("localhost", GameIO.DEFAULT_PORT);
+		} else if (args.length == 1) {
+			client = new Client(args[0], GameIO.DEFAULT_PORT);
+		} else {
+			client = new Client(args[1], Integer.valueOf(args[1]));
+		}
+		client.doLogin();
 	}
 }
