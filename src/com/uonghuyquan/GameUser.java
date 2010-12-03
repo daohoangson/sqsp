@@ -7,10 +7,11 @@ import com.daohoangson.GameIO;
 import com.daohoangson.GameMessage;
 
 public class GameUser {
-	private GameServer server;
-	private GameIO io;
-	private GameRoom room = null;
+	public GameServer server;
+	public GameIO io;
+	public GameRoom room = null;
 	private String username = null;
+	private boolean ready = false;
 
 	public GameUser(GameServer server, GameIO io) {
 		this.server = server;
@@ -80,6 +81,10 @@ public class GameUser {
 		}
 		room.addUser(this);
 		this.room = room;
+
+		if (room.waitFor(this)) {
+			room.play(this);
+		}
 	}
 
 	private void loop() throws IOException, GameException {
@@ -95,12 +100,12 @@ public class GameUser {
 				io.write(response);
 				break;
 			case GameMessage.ROOM_MAKE:
-				GameRoom room = new GameRoom(server, m
+				GameRoom room = new GameRoom(server, this, m
 						.getParamAsInt("Room-Size"));
 				joinRoom(room);
 
 				response = new GameMessage(GameMessage.OK);
-				response.addParam("RoomID", room.getId());
+				room.buildRoomInfoMessage(response);
 				io.write(response);
 				break;
 			case GameMessage.ROOM_INFO:
@@ -119,17 +124,7 @@ public class GameUser {
 
 				if (roomInfo != null) {
 					response = new GameMessage(GameMessage.OK);
-					response.addParam("RoomID", roomInfo.getId());
-					response.addParam("Room-Size", roomInfo.getSize());
-					response.addParam("Users", roomInfo.getUsers());
-					for (int i = 0; i < roomInfo.getUsers(); i++) {
-						GameUser user = roomInfo.getUserByOffset(i);
-						if (user != null) {
-							response.addParam("User" + (i + 1), user
-									.getUsername());
-						}
-					}
-					response.addParam("Status", roomInfo.getStatus());
+					roomInfo.buildRoomInfoMessage(response);
 					io.write(response);
 				} else {
 					io.writeError(GameMessage.E_ROOM_NOT_FOUND);
@@ -141,6 +136,10 @@ public class GameUser {
 
 	public String getUsername() {
 		return username;
+	}
+
+	public boolean isReady() {
+		return ready;
 	}
 
 	@Override

@@ -16,6 +16,10 @@ public class ClientTest {
 			} else {
 				gc.roomJoin(1);
 			}
+			if (gc.getRoomId() > 0) {
+				// joined a room
+				gc.waiting();
+			}
 		}
 
 		Scanner sc = new Scanner(System.in);

@@ -6,7 +6,7 @@ import com.daohoangson.GameException;
 import com.daohoangson.GameIO;
 import com.daohoangson.GameMessage;
 
-public class GameUserList {
+public abstract class GameUserList {
 	protected HashMap<String, GameUser> users = new HashMap<String, GameUser>();
 
 	public void addUser(GameUser user) throws GameException {

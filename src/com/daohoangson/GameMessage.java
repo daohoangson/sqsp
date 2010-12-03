@@ -3,7 +3,18 @@ package com.daohoangson;
 import java.util.Iterator;
 import java.util.Map.Entry;
 
+/**
+ * A message to transfer or receive via socket connections. It makes use of
+ * {@link GameParamList} to manage parameters in a message
+ * 
+ * @author Dao Hoang Son
+ * 
+ */
 public class GameMessage extends GameParamList {
+	/**
+	 * Message code. There are quite a few constants of this class are supposed
+	 * for code
+	 */
 	private int code = 0;
 
 	public final static String VERSION_STRING = "SQSP/1.0";
@@ -19,18 +30,8 @@ public class GameMessage extends GameParamList {
 	public final static int ROOM_INFO = 4;
 	public final static int ROOM_MAKE = 5;
 	public final static int ROOM_JOIN = 6;
-	public final static int ROOM_JOINED = 906;
-	public final static int ROOM_CLOSED = 907;
 	public final static int ROOMS = 8;
-
-	public final static int GAME_START = 10;
-	public final static int GAME_STARTED = 910;
-	public final static int GAME_ENDED = 911;
-
-	public final static int READY = 12;
-	public final static int READY_CHECKED = 912;
-	public final static int READY_NOT = 13;
-	public final static int READY_UNCHECKED = 913;
+	public final static int ROOM_STATE = 9;
 
 	public final static int TURN = 920;
 	public final static int GO = 21;
@@ -51,30 +52,73 @@ public class GameMessage extends GameParamList {
 
 	/* Error Code - END */
 
+	/**
+	 * Constructs a blank message
+	 */
 	public GameMessage() {
 		// do something here?
 	}
 
+	/**
+	 * Constructs a message with the specified code
+	 * 
+	 * @param code
+	 *            the message code
+	 */
 	public GameMessage(int code) {
 		this.code = code;
 	}
 
+	/**
+	 * Sets message code
+	 * 
+	 * @param code
+	 *            the message code
+	 */
 	public void setCode(int code) {
 		this.code = code;
 	}
 
+	/**
+	 * Sets message code by code's text version. This method will use
+	 * {@link GameMessage#lookupCodeFromString(String)} to find the
+	 * correspondent message code
+	 * 
+	 * @param code
+	 *            the code (text version)
+	 */
 	public void setCode(String code) {
 		setCode(GameMessage.lookupCodeFromString(code));
 	}
 
+	/**
+	 * Gets message code
+	 * 
+	 * @return the message code
+	 */
 	public int getCode() {
 		return code;
 	}
 
+	/**
+	 * Checks if this message has the requested message code
+	 * 
+	 * @param code
+	 *            the requested message code
+	 * @return true if it is, false otherwise
+	 */
 	public boolean is(int code) {
 		return this.code == code;
 	}
 
+	/**
+	 * Lookups code (integer) from code (text)
+	 * 
+	 * @param code
+	 *            the message code (in text)
+	 * @return the message code (integer value)
+	 * @see #lookupCodeToString(int)
+	 */
 	public static int lookupCodeFromString(String code) {
 		if (code.equals("OK")) {
 			return GameMessage.OK;
@@ -104,37 +148,11 @@ public class GameMessage extends GameParamList {
 		if (code.equals("ROOM_JOIN")) {
 			return GameMessage.ROOM_JOIN;
 		}
-		if (code.equals("ROOM_JOINED")) {
-			return GameMessage.ROOM_JOINED;
-		}
-		if (code.equals("ROOM_CLOSED")) {
-			return GameMessage.ROOM_CLOSED;
-		}
 		if (code.equals("ROOMS")) {
 			return GameMessage.ROOMS;
 		}
-
-		if (code.equals("GAME_START")) {
-			return GameMessage.GAME_START;
-		}
-		if (code.equals("GAME_STARTED")) {
-			return GameMessage.GAME_STARTED;
-		}
-		if (code.equals("GAME_ENDED")) {
-			return GameMessage.GAME_ENDED;
-		}
-
-		if (code.equals("READY")) {
-			return GameMessage.READY;
-		}
-		if (code.equals("READY_CHECKED")) {
-			return GameMessage.READY_CHECKED;
-		}
-		if (code.equals("READY_NOT")) {
-			return GameMessage.READY_NOT;
-		}
-		if (code.equals("READY_UNCHECKED")) {
-			return GameMessage.READY_UNCHECKED;
+		if (code.equals("ROOM_STATE")) {
+			return GameMessage.ROOM_STATE;
 		}
 
 		if (code.equals("TURN")) {
@@ -163,6 +181,14 @@ public class GameMessage extends GameParamList {
 		return 0;
 	}
 
+	/**
+	 * Translates message code to text
+	 * 
+	 * @param code
+	 *            the message code
+	 * @return the text represents the code or UNKNOWN if code not found
+	 * @see #lookupCodeFromString(String)
+	 */
 	public static String lookupCodeToString(int code) {
 		switch (code) {
 		case OK:
@@ -184,28 +210,10 @@ public class GameMessage extends GameParamList {
 			return "ROOM_MAKE";
 		case ROOM_JOIN:
 			return "ROOM_JOIN";
-		case ROOM_JOINED:
-			return "ROOM_JOINED";
-		case ROOM_CLOSED:
-			return "ROOM_CLOSED";
 		case ROOMS:
 			return "ROOMS";
-
-		case GAME_START:
-			return "GAME_START";
-		case GAME_STARTED:
-			return "GAME_STARTED";
-		case GAME_ENDED:
-			return "GAME_ENDED";
-
-		case READY:
-			return "READY";
-		case READY_CHECKED:
-			return "READY_CHECKED";
-		case READY_NOT:
-			return "READY_NOT";
-		case READY_UNCHECKED:
-			return "READY_UNCHECKED";
+		case ROOM_STATE:
+			return "ROOM_STATE";
 
 		case TURN:
 			return "TURN";
@@ -227,6 +235,14 @@ public class GameMessage extends GameParamList {
 		}
 	}
 
+	/**
+	 * Adds parameter from header (via socket). This should be in the format of
+	 * <code>Key: Value</code>. This is a wrapper method, it makes use of
+	 * {@link GameParamList#addParam(String, String)}
+	 * 
+	 * @param line
+	 *            the line
+	 */
 	public void addParam(String line) {
 		String[] parts = line.split(":");
 		if (parts.length == 2) {
@@ -234,6 +250,13 @@ public class GameMessage extends GameParamList {
 		}
 	}
 
+	/**
+	 * Prepares the message to be sent via socket
+	 * 
+	 * @param forceCount
+	 *            the flag to always include Params-Count (not recommend)
+	 * @return the {@linkplain String} ready to be sent
+	 */
 	public String prepare(boolean forceCount) {
 		String result = "";
 
@@ -255,6 +278,12 @@ public class GameMessage extends GameParamList {
 		return result;
 	}
 
+	/**
+	 * Prepares the message to be sent via socket. Automatically ignore
+	 * Params-Count if not neccessary
+	 * 
+	 * @return the {{@linkplain String} ready to be sent
+	 */
 	public String prepare() {
 		return prepare(false);
 	}
