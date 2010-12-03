@@ -52,6 +52,9 @@ public class GameMessage extends GameParamList {
 
 	/* Error Code - END */
 
+	public final static int RS_WAITING = 0;
+	public final static int RS_PLAYING = 1;
+
 	/**
 	 * Constructs a blank message
 	 */

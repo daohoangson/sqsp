@@ -15,6 +15,14 @@ public class GameParamList {
 	 */
 	protected HashMap<String, String> params = new HashMap<String, String>();
 
+	public GameParamList() {
+		// do nothing?
+	}
+
+	public GameParamList(GameParamList other) {
+		params = new HashMap<String, String>(other.params);
+	}
+
 	/**
 	 * Adds/replaces a parameter by key
 	 * 
@@ -25,7 +33,7 @@ public class GameParamList {
 	 */
 	public void addParam(String key, String value) {
 		params.put(key, value);
-		GameIO.debug("GameMessage addParam " + key + " " + value, 4);
+		GameIO.debug("GameMessage addParam " + key + " " + value, 6);
 	}
 
 	/**

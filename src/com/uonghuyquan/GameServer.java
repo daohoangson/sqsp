@@ -33,6 +33,7 @@ public class GameServer extends GameUserList {
 
 	public void addRoom(GameRoom room) {
 		rooms.add(room);
+		GameIO.debug("Added room #" + room.getId(), 2);
 	}
 
 	public boolean removeRoom(GameRoom room) {

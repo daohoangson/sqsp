@@ -24,7 +24,7 @@ public class GameIO {
 	/**
 	 * The default port for the whole system (server and client)
 	 */
-	final public static int DEFAULT_PORT = 666; // Satan's number >:)
+	final public static int DEFAULT_PORT = 22222; // Satan's number >:)
 	public GameMessage lastSentMessage = null;
 	public GameMessage lastReceivedMessage = null;
 
@@ -54,7 +54,7 @@ public class GameIO {
 		out.print(m.prepare());
 		out.flush();
 		lastSentMessage = m;
-		GameIO.debug("Sent:\n" + m.toString(), 3);
+		GameIO.debug("Sent:\n" + m.toString(), 5);
 	}
 
 	/**
@@ -103,7 +103,7 @@ public class GameIO {
 		}
 
 		lastReceivedMessage = m;
-		GameIO.debug("Received:\n" + m.toString(), 3);
+		GameIO.debug("Received:\n" + m.toString(), 5);
 		return m;
 	}
 
@@ -154,8 +154,8 @@ public class GameIO {
 	 * @param level
 	 *            the debug level
 	 */
-	public static void debug(String message, int level) {
-		int maxLevel = 4;
+	public static synchronized void debug(String message, int level) {
+		int maxLevel = 5;
 		if (level <= maxLevel) {
 			System.out.println(message);
 		}

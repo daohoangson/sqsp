@@ -2,17 +2,18 @@ package com.uonghuyquan;
 
 import java.io.IOException;
 
-import com.daohoangson.GameException;
 import com.daohoangson.GameIO;
 import com.daohoangson.GameMessage;
 
-public class GameRoom extends GameUserList {
+public class GameRoom extends GameUserList implements Runnable {
 	private static int count = 0;
 	private int id;
+	@SuppressWarnings("unused")
 	private GameServer server;
 	private GameUser host;
 	private int size;
 	private int status;
+	private boolean active = true;
 
 	public GameRoom(GameServer server, GameUser host, int size) {
 		id = ++GameRoom.count;
@@ -20,9 +21,11 @@ public class GameRoom extends GameUserList {
 		this.host = host;
 		this.size = size;
 
-		GameIO.debug("GameRoom created", 2);
-
 		server.addRoom(this);
+
+		new Thread(this).start();
+
+		GameIO.debug("GameRoom created", 2);
 	}
 
 	public int getId() {
@@ -57,46 +60,37 @@ public class GameRoom extends GameUserList {
 		m.addParam("Status", getStatus());
 	}
 
-	@Override
-	public void addUser(GameUser user) throws GameException {
-		super.addUser(user);
-
-		GameMessage broadcastMessage = new GameMessage(GameMessage.ROOM_STATE);
-		buildRoomInfoMessage(broadcastMessage);
-		broadcast(broadcastMessage);
-	}
-
-	@Override
-	public boolean removeUser(GameUser user) {
-		boolean b = super.removeUser(user);
-
-		if (b) {
-			GameMessage broadcastMessage = new GameMessage(
-					GameMessage.ROOM_STATE);
-			buildRoomInfoMessage(broadcastMessage);
-			broadcast(broadcastMessage);
-		}
-
-		return b;
-	}
-
 	private void broadcast(GameMessage broadcastMessage) {
-		GameUser[] users = this.users.values().toArray(new GameUser[0]);
-		for (int i = 0; i < users.length; i++) {
-			try {
-				users[i].io.write(broadcastMessage);
-			} catch (IOException e) {
-				GameIO.debug(e.toString(), 2);
+		synchronized (users) {
+			GameUser[] users = this.users.values().toArray(new GameUser[0]);
+			for (int i = 0; i < users.length; i++) {
+				try {
+					users[i].io.write(broadcastMessage);
+					users[i].io.read();
+				} catch (IOException e) {
+					users[i].byebye();
+				}
 			}
 		}
 	}
 
-	public synchronized boolean waitFor(GameUser user) {
-		return false;
-	}
-
-	public synchronized void play(GameUser user) {
-		// TODO
+	public void run() {
+		while (true) {
+			if (!active) {
+				return;
+			}
+			try {
+				Thread.sleep(2000);
+			} catch (InterruptedException e) {
+				GameIO.debug(e.toString());
+			}
+			if (users.size() == 0) {
+				continue;
+			}
+			GameMessage m = new GameMessage(GameMessage.ROOM_STATE);
+			buildRoomInfoMessage(m);
+			broadcast(m);
+		}
 	}
 
 	@Override

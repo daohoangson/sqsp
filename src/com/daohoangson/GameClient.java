@@ -2,7 +2,6 @@ package com.daohoangson;
 
 import java.io.IOException;
 import java.net.Socket;
-import java.util.HashMap;
 
 import com.daohoangson.event.GameEvent;
 import com.daohoangson.event.GameEventSource;
@@ -23,8 +22,9 @@ public class GameClient extends GameEventSource implements Runnable {
 	 */
 	private String username = null;
 	private int roomId = 0;
+	private boolean host = false;
 	private boolean ready = false;
-	private HashMap<String, Integer> players = new HashMap<String, Integer>();
+	private GameParamList roomInfo = null;
 
 	/**
 	 * Constructs
@@ -35,6 +35,8 @@ public class GameClient extends GameEventSource implements Runnable {
 	 *            the host port number
 	 */
 	public GameClient(String host, int port) {
+		super();
+
 		try {
 			Socket socket = new Socket(host, port);
 			io = new GameIO(socket);
@@ -54,27 +56,28 @@ public class GameClient extends GameEventSource implements Runnable {
 	public synchronized void run() {
 		while (true) {
 			try {
-				GameIO.debug("Waiting in loop", 4);
+				GameIO.debug("Waiting in loop", 5);
 				GameMessage m = io.read();
-				GameMessage sent = io.lastSentMessage;
-				GameMessage response = null;
 
-				if (sent != null) {
-					switch (sent.getCode()) {
-					case GameMessage.LOGIN:
-						if (isOK(response)) {
-							fireGameEvent(GameEvent.LOGGED_IN);
-							GameIO.debug("Logged In");
-							continue;
-						}
-					}
-				}
+				GameIO.debug("Received a message: " + m.getCode(), 4);
+
 				switch (m.getCode()) {
 				case GameMessage.ROOM_STATE:
-
-					break;
+					if (m.getParamAsInt("RoomID") == roomId) {
+						GameMessage myState = new GameMessage(GameMessage.OK);
+						myState.addParam("Username", username);
+						myState.addParam("Ready", ready ? 1 : 0);
+						io.write(myState);
+						readRoomInfoMessage(m);
+					} else {
+						GameIO.debug("ROOM_STATE INVALID: "
+								+ m.getParamAsInt("RoomID"), 4);
+						io.writeError(GameMessage.E_INVALID);
+					}
+					continue;
 				}
 			} catch (IOException e) {
+				fireGameEvent(GameEvent.IOException);
 				GameIO.debug(e.toString());
 				return;
 			}
@@ -90,12 +93,14 @@ public class GameClient extends GameEventSource implements Runnable {
 	}
 
 	private GameMessage writeRead(GameMessage m) {
-		GameMessage previousReceived = io.lastReceivedMessage;
-		write(m);
-		while (io.lastReceivedMessage == previousReceived) {
-			break;
+		synchronized (io) {
+			GameMessage previousReceived = io.lastReceivedMessage;
+			write(m);
+			while (io.lastReceivedMessage == previousReceived) {
+				// wait
+			}
+			return io.lastReceivedMessage;
 		}
-		return io.lastReceivedMessage;
 	}
 
 	/**
@@ -107,11 +112,19 @@ public class GameClient extends GameEventSource implements Runnable {
 	 *            the password
 	 * @return true if server accepts login request, false otherwise
 	 */
-	public void login(String username, String password) {
+	public boolean login(String username, String password) {
 		GameMessage login = new GameMessage(GameMessage.LOGIN);
 		login.addParam("Username", username);
 		login.addParam("Password", password);
-		write(login);
+		GameMessage response = writeRead(login);
+
+		if (isOK(response)) {
+			this.username = username;
+			fireGameEvent(GameEvent.LOGGED_IN);
+			return true;
+		}
+
+		return false;
 	}
 
 	/**
@@ -131,17 +144,6 @@ public class GameClient extends GameEventSource implements Runnable {
 		return 0;
 	}
 
-	private void readRoomInfoMessage(GameMessage m) {
-		roomId = m.getParamAsInt("RoomID");
-		players.clear();
-		int users = m.getParamAsInt("Users");
-		for (int i = 0; i < users; i++) {
-			String username = m.getParam("User" + i);
-			int ready = m.getParamAsInt("Ready" + i);
-			players.put(username, ready);
-		}
-	}
-
 	/**
 	 * Tries to make a room in server using {@link GameMessage#ROOM_MAKE}
 	 * message type
@@ -153,10 +155,12 @@ public class GameClient extends GameEventSource implements Runnable {
 	public int roomMake(int size) {
 		GameMessage roomMake = new GameMessage(GameMessage.ROOM_MAKE);
 		roomMake.addParam("Room-Size", size);
+		ready = false;
 		GameMessage response = writeRead(roomMake);
 
 		if (isOK(response)) {
 			readRoomInfoMessage(response);
+			fireGameEvent(GameEvent.JOINED_ROOM);
 			return roomId;
 		}
 
@@ -196,14 +200,41 @@ public class GameClient extends GameEventSource implements Runnable {
 	public GameParamList roomJoin(int roomId) {
 		GameMessage roomJoin = new GameMessage(GameMessage.ROOM_JOIN);
 		roomJoin.addParam("RoomID", roomId);
+		ready = false;
 		GameMessage response = writeRead(roomJoin);
 
 		if (isOK(response)) {
 			readRoomInfoMessage(response);
+			fireGameEvent(GameEvent.JOINED_ROOM);
 			return response;
 		}
 
 		return null;
+	}
+
+	private void readRoomInfoMessage(GameMessage m) {
+		int tmp = m.getParamAsInt("RoomID");
+		if (tmp > 0) {
+			roomId = tmp;
+			host = m.getParam("Host").equals(username);
+			GameParamList oldRoomInfo = roomInfo;
+			roomInfo = new GameParamList(m);
+
+			if (oldRoomInfo != null) {
+				int statusOld = oldRoomInfo.getParamAsInt("Status");
+				int statusNew = roomInfo.getParamAsInt("Status");
+
+				if (statusOld != statusNew) {
+					if (statusNew == GameMessage.RS_PLAYING) {
+						fireGameEvent(GameEvent.STARTED);
+					}
+				}
+			}
+
+			GameIO.debug("Updated room info", 4);
+		} else {
+			GameIO.debug("readRoomInfoMessage invalid", 4);
+		}
 	}
 
 	/**
@@ -228,5 +259,41 @@ public class GameClient extends GameEventSource implements Runnable {
 
 	public int getRoomId() {
 		return roomId;
+	}
+
+	public boolean isHost() {
+		return host;
+	}
+
+	public void setReady(boolean ready) {
+		if (host) {
+			this.ready = true;
+		} else {
+			this.ready = ready;
+		}
+	}
+
+	public boolean isReady() {
+		return ready;
+	}
+
+	private String getRoomInfo(String paramKey) {
+		if (roomInfo != null) {
+			return roomInfo.getParam(paramKey);
+		} else {
+			return "";
+		}
+	}
+
+	public int getRoomUsers() {
+		return Integer.valueOf(getRoomInfo("Users"));
+	}
+
+	public String getRoomUsername(int offset) {
+		return getRoomInfo("User" + offset);
+	}
+
+	public boolean getRoomReady(int offset) {
+		return Integer.valueOf(getRoomInfo("Ready" + offset)) == 1;
 	}
 }

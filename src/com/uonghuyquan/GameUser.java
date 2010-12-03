@@ -34,12 +34,16 @@ public class GameUser {
 			// TODO: make sure to clean up stuff here, this is the last barrier
 			// so.. don't mess up
 			GameIO.debug(e.toString());
-			GameIO.debug("Connection lost. Cleaning stuff from the Server", 1);
-			if (room != null) {
-				room.removeUser(this);
-			}
-			server.removeUser(this);
+			byebye();
 		}
+	}
+
+	public void byebye() {
+		GameIO.debug("Connection lost. Cleaning stuff from the Server", 1);
+		if (room != null) {
+			room.removeUser(this);
+		}
+		server.removeUser(this);
 	}
 
 	private void login() throws IOException, GameException {
@@ -81,10 +85,6 @@ public class GameUser {
 		}
 		room.addUser(this);
 		this.room = room;
-
-		if (room.waitFor(this)) {
-			room.play(this);
-		}
 	}
 
 	private void loop() throws IOException, GameException {
@@ -107,7 +107,8 @@ public class GameUser {
 				response = new GameMessage(GameMessage.OK);
 				room.buildRoomInfoMessage(response);
 				io.write(response);
-				break;
+
+				return;
 			case GameMessage.ROOM_INFO:
 			case GameMessage.ROOM_JOIN:
 				GameRoom roomInfo;
@@ -128,6 +129,10 @@ public class GameUser {
 					io.write(response);
 				} else {
 					io.writeError(GameMessage.E_ROOM_NOT_FOUND);
+				}
+
+				if (m.getCode() == GameMessage.ROOM_JOIN) {
+					return;
 				}
 				break;
 			}

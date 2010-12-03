@@ -1,9 +1,9 @@
 package com.daohoangson.event;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
+import com.daohoangson.GameIO;
 import com.daohoangson.GameMessage;
 
 public class GameEventSource {
@@ -17,20 +17,28 @@ public class GameEventSource {
 		listeners.remove(gel);
 	}
 
-	protected synchronized void fireGameEvent(int type, GameMessage m) {
-		GameEvent ge = new GameEvent(this, type, m);
-		fireGameEvent(ge);
+	protected void fireGameEvent(int type, GameMessage m) {
+		fireGameEvent(new GameEvent(this, type, m));
 	}
 
-	protected synchronized void fireGameEvent(int type) {
-		GameEvent ge = new GameEvent(this, type);
-		fireGameEvent(ge);
+	protected void fireGameEvent(int type) {
+		fireGameEvent(new GameEvent(this, type, null));
 	}
 
-	protected synchronized void fireGameEvent(GameEvent ge) {
-		Iterator<GameEventListener> i = listeners.iterator();
-		while (i.hasNext()) {
-			i.next().handleGameEvent(ge);
+	protected void fireGameEvent(GameMessage m) {
+		fireGameEvent(new GameEvent(this, 0, m));
+	}
+
+	private void fireGameEvent(GameEvent ge) {
+		GameMessage m = ge.gameMessage;
+		if (m != null) {
+			GameIO.debug("GameEvent fired: "
+					+ GameMessage.lookupCodeToString(ge.gameMessage.getCode()),
+					4);
+		} else {
+			GameIO.debug("GameEvent fired: #" + ge.getType(), 4);
 		}
+
+		GameEventQueue.getInstance().add(ge, listeners.iterator());
 	}
 }
