@@ -1,100 +1,223 @@
 package com.uonghuyquan;
 
-import java.io.IOException;
+import java.util.Random;
+import java.util.Vector;
 
-import com.daohoangson.GameIO;
 import com.daohoangson.GameMessage;
 
-public class GameRoom extends GameUserList implements Runnable {
-	private static int count = 0;
-	private int id;
-	@SuppressWarnings("unused")
-	private GameServer server;
-	private GameUser host;
-	private int size;
-	private int status;
-	private boolean active = true;
 
-	public GameRoom(GameServer server, GameUser host, int size) {
-		id = ++GameRoom.count;
-		this.server = server;
-		this.host = host;
+public class GameRoom {
+	int id;								//Room Id.
+	int offset;
+	int size;							//room size
+	int conCnt;							//Number of connections.
+	int stt;							//1 - playing,0 - waiting
+	final static int maxInRoom = 4;		//Maximum members.
+	int code[];							//Code of result 
+    private Vector<String> members;		//Administrators.
+    private Vector<String> permissions;	//Permissions of chat room. (0- host, 1- player).
+    private Vector<Boolean> memstt;		//status of menbers
+    private Vector<Integer> scores;		//score
+    int turn;							// 0,1,2,3 <=> offset
+    boolean finished;					//true or false
+    
+    //Constructor
+	public GameRoom(int id, int size) {
+		this.offset = -1;
+		this.id = id;
 		this.size = size;
+		this.turn = 0;
+		finished = false;
+		conCnt = 0;
+		members = new Vector<String>(maxInRoom);
+		permissions = new Vector<String>(maxInRoom);
+		scores = new Vector<Integer>(maxInRoom);
+		memstt = new Vector<Boolean>(40);
+		stt = 0;
+		
+		int cardTypes = size / 10;
+		if(size <= 10)cardTypes=size/2;
+		code = new int[size];
+		Random rand = new Random();
+		for(int i=0;i<size;i++){
+			code[i] = -1;
+		}
+		for(int i = 0; i < cardTypes;i++) {
+			for(int j = 0; j < size/cardTypes; j++) {
+				int k;
+				do {
+					k = rand.nextInt(size);
+				} while (code[k] != -1);
+				code[k] = i;
+			}
+		}
+	}
+	public void setOffset(int offset) {
+		this.offset = offset;
+	}
+	//Adds a member to room:
+	public boolean addMember(String username) {
+		if(conCnt >= maxInRoom)return false;
+		//Check if first member, if so he is the host
+		if (conCnt == 0) {
+			members.add(username);
+			permissions.add("0");
+			memstt.add(false);
+		}
+		else {
+			members.add(username);
+			permissions.add("1");
+			memstt.add(false);
+		}
+		conCnt++;
+		return true;
+	}
+	
+	//Removes a member from room:
+	public void removeMember(String username) {
+		int i;
+		
+		for (i=0 ; i<members.size() ; i++) {
+			if (members.elementAt(i).equals(username)) {
+				permissions.removeElementAt(i);
+				members.removeElementAt(i);
+				memstt.removeElementAt(i);
+				conCnt--;
+				return;
+			}
+		}
+	}
+	
+	//Get member permissions:
+	public int getPermissions(String username) {
+		int i;
+		
+		for (i=0 ; i<members.size() ; i++) {
+			if (members.elementAt(i).equals(username)) {
+				return Integer.parseInt((String)permissions.elementAt(i));
+			}
+		}
+		
+		return -1;
+	}
+	
+	//Set member permissions:
+	public boolean setPermissions(String username, String permissions) {
+		int i;
+		
+		for (i=0 ; i<members.size() ; i++) {
+			if (members.elementAt(i).equals(username)) {
+				this.permissions.set(i, permissions);
+				return true;
+			}
+		}
+		return false;
+	}
+	
 
-		server.addRoom(this);
-
-		new Thread(this).start();
-
-		GameIO.debug("GameRoom created", 2);
+	//Check if member is in room:
+	public boolean isMember(String memberName) {
+		int i;
+		
+		for (i=0 ; i<members.size() ; i++) {
+			if (members.elementAt(i).equals(memberName)) {
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
+	public boolean setReady(String username){
+		for (int i=0 ; i<members.size() ; i++) {
+			if (members.elementAt(i).equals(username)) {
+				this.memstt.set(i, true);
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public boolean setNotReady(String username){
+		for (int i=0 ; i<members.size() ; i++) {
+			if (members.elementAt(i).equals(username)) {
+				this.memstt.set(i, false);
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public boolean getMemStt(int index){
+		return memstt.elementAt(index);
 	}
 
+	//Count members in room;
+	public int membersCount() {
+		return conCnt;
+	}
 	public int getId() {
 		return id;
 	}
-
-	public GameUser getHost() {
-		return host;
-	}
-
 	public int getSize() {
 		return size;
 	}
-
-	public int getStatus() {
-		return status;
+	public String getNameByOffset(int index){
+		return members.elementAt(index);
 	}
-
+	public int getUsers(){
+		return members.size();
+	}
+	public int getStt() {
+		return stt;
+	}
+	public void setStt(int stt) {
+		this.stt = stt;
+	}
+	//
 	public void buildRoomInfoMessage(GameMessage m) {
 		m.addParam("RoomID", getId());
 		m.addParam("Room-Size", getSize());
-		m.addParam("Host", getHost().getUsername());
+		m.addParam("Host", getNameByOffset(0));
 		m.addParam("Users", getUsers());
-		GameUser[] users = this.users.values().toArray(new GameUser[0]);
-		for (int i = 0; i < users.length; i++) {
-			GameUser user = users[i];
-			if (user != null) {
-				m.addParam("User" + i, user.getUsername());
-				m.addParam("Ready" + i, user.isReady() ? 1 : 0);
-			}
+		for (int i = 0; i < getUsers(); i++) {
+				m.addParam("User" + i, getNameByOffset(i));
+				m.addParam("Ready" + i, getMemStt(i) ? 1 : 0);
 		}
-		m.addParam("Status", getStatus());
+		m.addParam("Status", getStt());
 	}
-
-	private void broadcast(GameMessage broadcastMessage) {
-		synchronized (users) {
-			GameUser[] users = this.users.values().toArray(new GameUser[0]);
-			for (int i = 0; i < users.length; i++) {
-				try {
-					users[i].io.write(broadcastMessage);
-					users[i].io.read();
-				} catch (IOException e) {
-					users[i].byebye();
-				}
-			}
+	public boolean readyToPlay(){
+		for(int i=0; i< memstt.size();i++){
+			if(memstt.elementAt(i)==false)
+				return false;
 		}
+		return true;
 	}
-
-	public void run() {
-		while (true) {
-			if (!active) {
-				return;
-			}
-			try {
-				Thread.sleep(2000);
-			} catch (InterruptedException e) {
-				GameIO.debug(e.toString());
-			}
-			if (users.size() == 0) {
-				continue;
-			}
-			GameMessage m = new GameMessage(GameMessage.ROOM_STATE);
-			buildRoomInfoMessage(m);
-			broadcast(m);
-		}
+	public Vector<String> getMembers() {
+		return members;
 	}
-
-	@Override
-	public String toString() {
-		return "Room #" + id;
+	public void setTurn(int turn) {
+		this.turn = turn;
+	}
+	public int getTurn() {
+		return turn;
+	}
+	public int getCode(int index) {
+		return code[index];
+	}
+	public void setFinished(boolean finished) {
+		this.finished = finished;
+	}
+	public boolean getFinished(){
+		return this.finished;
+	}
+	public void setScore(int score, int offset) {
+		this.scores.setElementAt(offset, score);
+	}
+	public int getScore(int offset) {
+		return scores.elementAt(offset);
 	}
 }
+
+/* EOF */
+
