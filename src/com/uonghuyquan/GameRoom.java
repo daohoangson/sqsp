@@ -1,9 +1,9 @@
-package Server;
+package com.uonghuyquan;
 
 import java.util.Random;
 import java.util.Vector;
 
-import shared.GameMessage;
+import com.daohoangson.GameMessage;
 
 public class GameRoom {
 	int id;								//Room Id.

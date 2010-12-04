@@ -1,11 +1,11 @@
-package Server;
+package com.uonghuyquan;
 
 import java.io.IOException;
 import java.net.Socket;
 import java.util.Random;
 
-import shared.GameIO;
-import shared.GameMessage;
+import com.daohoangson.GameIO;
+import com.daohoangson.GameMessage;
 
 
 public class GameServerThread extends Thread {
