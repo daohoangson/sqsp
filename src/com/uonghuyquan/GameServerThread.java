@@ -225,8 +225,6 @@ public class GameServerThread extends Thread {
 				// if true
 				if(code[0] == code[1]){
 					int thisOffset = thisRoom.getTurn();
-					System.out.println("anh hoc tro test"+thisOffset);
-					System.out.println("sadhjahssdv     "+thisRoom.getScore(1));
 					int thisScore = thisRoom.getScore(thisOffset);
 					thisRoom.setScore(thisScore++, thisOffset);
 					m = new GameMessage(GameMessage.SCORED);
@@ -242,6 +240,9 @@ public class GameServerThread extends Thread {
 					//if win
 					if(thisRoom.getScore(thisOffset) >= thisRoom.getSize()/2){
 						m = new GameMessage(GameMessage.WON);
+						for(int j=0;j<thisRoom.conCnt;j++){
+							m.addParam("User"+j,thisRoom.getScore(j));
+						}
 						for(int j = 0;j<server.getConTot();j++){
 							if(server.getRoomId(server.getCliSocks().elementAt(j)) == thisRoom.getId()){
 								io = new GameIO(server.getCliSocks().elementAt(j));
