@@ -194,13 +194,15 @@ public class GameServerThread extends Thread {
 				if(m.getCode()==GameMessage.CHAT)
 					chat(m, m.getParam("Content"));
 				int i=0;
-				while(true){
+				int tmp = 0;
+				for(i=0;i<2+tmp;i++){
 					m = new GameMessage(GameMessage.TURN);
 					m.addParam("Turn",name);
 					io.write(m);
 					System.out.println("i1:"+i);
+					System.out.println("turn :"+thisRoom.getTurn());
 					m = io.read();
-					if(m.getCode()==GameMessage.GO){
+					if(m.getCode() == GameMessage.GO){
 						int location = m.getParamAsInt("Location");
 						if(location<thisRoom.getSize() && location>-1 && thisRoom.getNotcheat(i) == 0){
 							code[i] = thisRoom.getCode(location);
@@ -224,7 +226,6 @@ public class GameServerThread extends Thread {
 					if(m.getCode()==GameMessage.CHAT)
 						chat(m, m.getParam("Content"));
 					System.out.println("i3:"+i);
-					if(i==2)break;
 				}
 				m = new GameMessage(GameMessage.GO_DONE);
 				m.addParam("Username", name);
