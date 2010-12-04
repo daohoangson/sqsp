@@ -209,7 +209,7 @@ public class GameServerThread extends Thread {
 							m =  new GameMessage(GameMessage.GO_MOVED);
 							m.addParam("User",name);
 							m.addParam("Location", location);
-							m.addParam("Code", code[i]);
+							m.addParam("Code", thisRoom.getCode(i));
 							for(int j = 0;j<server.getConTot();j++){
 								if(server.getRoomId(server.getCliSocks().elementAt(j)) == thisRoom.getId()){
 									io = new GameIO(server.getCliSocks().elementAt(j));
@@ -223,6 +223,7 @@ public class GameServerThread extends Thread {
 					if(m.getCode()==GameMessage.CHAT)
 						chat(m, m.getParam("Content"));
 					if(i==1)break;
+					System.out.println("xongfffffffffffffffffffffff");
 				}
 				m = new GameMessage(GameMessage.GO_DONE);
 				m.addParam("Username", name);
@@ -248,7 +249,7 @@ public class GameServerThread extends Thread {
 						}
 					}
 					//if win
-					if(thisRoom.getScore(thisOffset) >= thisRoom.getSize()/2){
+					if(thisRoom.getScore(thisOffset) >= thisRoom.getSize()/4){
 						m = new GameMessage(GameMessage.WON);
 						for(int j=0;j<thisRoom.conCnt;j++){
 							m.addParam("User"+j,thisRoom.getScore(j));
