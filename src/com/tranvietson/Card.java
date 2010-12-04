@@ -8,7 +8,7 @@ public class Card extends JButton {
 	private int cardId;
 
 	public Card() {
-		super("Card");
+		super("?");
 	}
 
 	public Card(int cardId) {
@@ -16,10 +16,14 @@ public class Card extends JButton {
 	}
 
 	public void open(int pictureId) {
-		setText("Card #" + pictureId);
+		setText("#" + pictureId);
 	}
 
-	public void flip() {
-		setText("Card");
+	public void close() {
+		setText("?");
+	}
+
+	public int getCardId() {
+		return cardId;
 	}
 }
