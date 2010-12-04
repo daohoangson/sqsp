@@ -197,7 +197,12 @@ public class GameServerThread extends Thread {
 				for(i=0;i<2;i++){
 					m = new GameMessage(GameMessage.TURN);
 					m.addParam("Turn",name);
-					io.write(m);
+					for(int j = 0;j<server.getConTot();j++){
+						if(server.getRoomId(server.getCliSocks().elementAt(j)) == thisRoom.getId()){
+							io = new GameIO(server.getCliSocks().elementAt(j));
+							io.write(m);
+						}
+					}
 					m = io.read();
 					if(m.getCode() != GameMessage.GO)
 					m = io.read();
