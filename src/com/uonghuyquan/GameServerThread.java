@@ -204,7 +204,6 @@ public class GameServerThread extends Thread {
 						int location = m.getParamAsInt("Location");
 						if(location<thisRoom.getSize() && location>-1 && thisRoom.getNotcheat(i) == 0){
 							code[i] = thisRoom.getCode(location);
-							i++;
 							thisRoom.setNotcheat(i);
 							m =  new GameMessage(GameMessage.GO_MOVED);
 							m.addParam("User",name);
@@ -216,14 +215,16 @@ public class GameServerThread extends Thread {
 									io.write(m);
 								}
 							}
+							i++;
+							System.out.println(i);
 						}else{
 							io.writeError(GameMessage.ERROR);
 						}
 					}
 					if(m.getCode()==GameMessage.CHAT)
 						chat(m, m.getParam("Content"));
+					System.out.println("i:"+i);
 					if(i==1)break;
-					System.out.println("xongfffffffffffffffffffffff");
 				}
 				m = new GameMessage(GameMessage.GO_DONE);
 				m.addParam("Username", name);
@@ -235,6 +236,7 @@ public class GameServerThread extends Thread {
 				}
 				// if true
 				if(code[0] == code[1]){
+					System.out.println("hello");
 					int thisOffset = thisRoom.getTurn();
 					int thisScore = thisRoom.getScore(thisOffset);
 					thisRoom.setScore(thisScore++, thisOffset);
