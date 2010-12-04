@@ -187,9 +187,12 @@ public class GameServerThread extends Thread {
 	private void room() throws IOException, InterruptedException{
 		GameRoom thisRoom = server.getRoomMgr().getRoomByName(name);
 		GameMessage m = null;
-		int code[] = new int[2];
+		int code[] = new int[3];
 		while(!thisRoom.getFinished()){
 			if(thisRoom.getNameByOffset(thisRoom.getTurn()).equals(name)){
+				System.out.println(thisRoom.getNameByOffset(thisRoom.getTurn()));
+				System.out.println("turn :"+thisRoom.getTurn());
+				Thread.sleep(100);
 				m = io.read();
 				if(m.getCode()==GameMessage.CHAT)
 					chat(m, m.getParam("Content"));
@@ -199,8 +202,7 @@ public class GameServerThread extends Thread {
 					m = new GameMessage(GameMessage.TURN);
 					m.addParam("Turn",name);
 					io.write(m);
-					System.out.println("i1:"+i);
-					System.out.println("turn :"+thisRoom.getTurn());
+					System.out.println("send GO:"+i+1);
 					m = io.read();
 					if(m.getCode() == GameMessage.GO){
 						int location = m.getParamAsInt("Location");
@@ -218,14 +220,14 @@ public class GameServerThread extends Thread {
 								}
 							}
 							i++;
-							System.out.println("i2:"+i);
 						}else{
 							io.writeError(GameMessage.ERROR);
 						}
 					}
-					if(m.getCode()==GameMessage.CHAT)
+					if(m.getCode()==GameMessage.CHAT){
+						tmp++;
 						chat(m, m.getParam("Content"));
-					System.out.println("i3:"+i);
+					}
 				}
 				m = new GameMessage(GameMessage.GO_DONE);
 				m.addParam("Username", name);
@@ -274,8 +276,8 @@ public class GameServerThread extends Thread {
 						server.getRoomMgr().removeRoom(thisRoom.getId());
 						Thread.sleep(10000);
 					}
-				}else thisRoom.setTurn((thisRoom.getTurn()+1)%thisRoom.getUsers());
-			}
+				}
+			}else thisRoom.setTurn((thisRoom.getTurn()+1)%thisRoom.getUsers());
 			//if no my turn
 			//do nothing
 		}
