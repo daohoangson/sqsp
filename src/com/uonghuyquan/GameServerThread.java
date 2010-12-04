@@ -214,6 +214,14 @@ public class GameServerThread extends Thread {
 						io.writeError(GameMessage.ERROR);
 					}
 				}
+				m = new GameMessage(GameMessage.GO_DONE);
+				m.addParam("Username", name);
+				for(int j = 0;j<server.getConTot();j++){
+					if(server.getRoomId(server.getCliSocks().elementAt(j)) == thisRoom.getId()){
+						io = new GameIO(server.getCliSocks().elementAt(j));
+						io.write(m);
+					}
+				}
 				// if true
 				if(code[0] == code[1]){
 					int thisOffset = thisRoom.getTurn();
