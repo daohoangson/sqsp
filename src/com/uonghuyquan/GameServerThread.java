@@ -180,7 +180,6 @@ public class GameServerThread extends Thread {
 				m = new GameMessage(GameMessage.ROOM_STATE);
 				thisRoom.buildRoomInfoMessage(m);
 				io.write(m);
-				m = io.read();
 			}
 			System.out.println("------this room stt:"+thisRoom.getStt());
 		}
@@ -205,11 +204,14 @@ public class GameServerThread extends Thread {
 						io = new GameIO(server.getCliSocks().elementAt(j));
 						io.write(m);
 					}
+					System.out.println("dfsdf");
 				}
 				m = io.read();
+				System.out.println("danh dau");
 				if(m.getCode() != GameMessage.GO)
 					m = io.read();
 				else{
+					System.out.println("lay dc lenh go");
 					int location = m.getParamAsInt("Location");
 					if(location<thisRoom.getSize() && location>-1 && thisRoom.getNotcheat(i) == 0){
 						code[i] = thisRoom.getCode(location);
