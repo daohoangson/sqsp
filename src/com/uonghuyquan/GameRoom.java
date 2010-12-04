@@ -18,7 +18,6 @@ public class GameRoom {
     private Vector<String> permissions;	//Permissions of chat room. (0- host, 1- player).
     private Vector<Boolean> memstt;		//status of menbers
     private Vector<Integer> scores;		//score
-    int turn;							// 0,1,2,3 <=> offset
     boolean finished;					//true or false
     
     //Constructor
@@ -26,7 +25,6 @@ public class GameRoom {
 		this.offset = -1;
 		this.id = id;
 		this.size = size;
-		this.turn = 0;
 		finished = false;
 		conCnt = 0;
 		members = new Vector<String>(maxInRoom);
@@ -211,12 +209,6 @@ public class GameRoom {
 	}
 	public Vector<String> getMembers() {
 		return members;
-	}
-	public void setTurn(int turn) {
-		this.turn = turn;
-	}
-	public int getTurn() {
-		return turn;
 	}
 	public int getCode(int index) {
 		return code[index];

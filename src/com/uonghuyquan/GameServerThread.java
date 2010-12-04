@@ -189,7 +189,7 @@ public class GameServerThread extends Thread {
 		if(!thisRoom.isHost(name))return;
 		else System.out.println("host:"+name);
 		GameMessage m = null;
-		int turn = thisRoom.getTurn();
+		int turn = 0;
 		while(!thisRoom.getFinished()){
 			int code[] = new int[2];
 			String playing = thisRoom.getNameByOffset(turn);
@@ -252,9 +252,10 @@ public class GameServerThread extends Thread {
 			// if true
 			if(code[0] == code[1]){
 				System.out.println("hello");
-				int thisOffset = thisRoom.getTurn();
+				int thisOffset = turn;
 				int thisScore = thisRoom.getScore(thisOffset);
-				thisRoom.setScore(thisScore++, thisOffset);
+				thisScore++;
+				thisRoom.setScore(thisScore, thisOffset);
 				m = new GameMessage(GameMessage.SCORED);
 				for(int j=0;j<thisRoom.conCnt;j++){
 					m.addParam("User"+j,thisRoom.getNameByOffset(j));
