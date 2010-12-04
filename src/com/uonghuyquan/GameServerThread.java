@@ -211,7 +211,6 @@ public class GameServerThread extends Thread {
 						m = io.read();
 					}
 				}
-				System.out.println("danh dau");
 				if(m.getCode() != GameMessage.GO)
 					for(int j = 0;j<server.getConTot();j++){
 						if(server.getRoomId(server.getCliSocks().elementAt(j)) == thisRoom.getId() && server.getCliNames().elementAt(j).equals(playing)){
@@ -220,8 +219,8 @@ public class GameServerThread extends Thread {
 						}
 					}
 				else{
-					System.out.println("lay dc lenh go");
 					int location = m.getParamAsInt("Location");
+					System.out.println(location);
 					if(location<thisRoom.getSize() && location>-1 && thisRoom.getNotcheat(i) == 0){
 						code[i] = thisRoom.getCode(location);
 						thisRoom.setNotcheat(i);
