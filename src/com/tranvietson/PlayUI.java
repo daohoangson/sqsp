@@ -20,7 +20,7 @@ public class PlayUI extends JFrame implements ActionListener {
 		int gridColumn = (int) Math.ceil(Math.sqrt(size));
 		setLayout(new GridLayout(0, gridColumn));
 		for (int i = 0; i < size; i++) {
-			Card card = new Card();
+			Card card = new Card(i);
 			card.setPreferredSize(new Dimension(100, 100));
 			// card.setActionCommand("Card" + i);
 			card.addActionListener(this);

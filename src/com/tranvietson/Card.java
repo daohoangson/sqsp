@@ -7,11 +7,8 @@ public class Card extends JButton {
 
 	private int cardId;
 
-	public Card() {
-		super("?");
-	}
-
 	public Card(int cardId) {
+		super("?");
 		this.cardId = cardId;
 	}
 
