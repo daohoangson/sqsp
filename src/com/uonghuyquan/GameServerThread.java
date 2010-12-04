@@ -49,8 +49,7 @@ public class GameServerThread extends Thread {
 				roomState();
 				
 				GameRoom thisRoom = server.getRoomMgr().getRoomByName(name);
-				System.out.println(thisRoom.getTurn());
-				sleep(100000);
+				System.out.println("turn start: "+thisRoom.getTurn());
 				//room
 				room();
 			}
@@ -191,11 +190,12 @@ public class GameServerThread extends Thread {
 	private void room() throws IOException, InterruptedException{
 		GameRoom thisRoom = server.getRoomMgr().getRoomByName(name);
 		if(!thisRoom.isHost(name))return;
+		else System.out.println(name);
 		GameMessage m = null;
 		while(!thisRoom.getFinished()){
 			int code[] = new int[2];
 			String playing = thisRoom.getNameByOffset(thisRoom.getTurn());
-				int i=0;
+				int i;
 				for(i=0;i<2;i++){
 					m = new GameMessage(GameMessage.TURN);
 					m.addParam("Turn",playing);
