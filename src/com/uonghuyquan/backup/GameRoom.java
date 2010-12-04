@@ -9,9 +9,9 @@ import com.daohoangson.GameMessage;
 public class GameRoom extends GameUserList implements Runnable {
 	private static int count = 0;
 	private int id;
-	@SuppressWarnings("unused")
 	private GameServer server;
 	private GameUser host;
+	private int gameId = 0;
 	private int size;
 	private int status;
 	private boolean active = true;
@@ -31,7 +31,7 @@ public class GameRoom extends GameUserList implements Runnable {
 
 		new Thread(this).start();
 
-		GameIO.debug("GameRoom created", 2);
+		GameIO.debug("GameRoom created (size = " + size + ")", 2);
 	}
 
 	public int getId() {
@@ -55,7 +55,7 @@ public class GameRoom extends GameUserList implements Runnable {
 		m.addParam("Room-Size", getSize());
 		m.addParam("Host", getHost().getUsername());
 		m.addParam("Users", getUsers());
-		GameUser[] users = this.users.values().toArray(new GameUser[0]);
+		GameUser[] users = getUsersArray();
 		for (int i = 0; i < users.length; i++) {
 			GameUser user = users[i];
 			if (user != null) {
@@ -64,6 +64,15 @@ public class GameRoom extends GameUserList implements Runnable {
 			}
 		}
 		m.addParam("Status", getStatus());
+	}
+
+	public void buildScoresMessage(GameMessage m) {
+		GameUser[] users = getUsersArray();
+		m.addParam("Users", users.length);
+		for (int i = 0; i < users.length; i++) {
+			m.addParam("User" + i, users[i].getUsername());
+			m.addParam("Score" + i, users[i].getScore());
+		}
 	}
 
 	private synchronized GameUser[] getUsersArray() {
@@ -97,13 +106,8 @@ public class GameRoom extends GameUserList implements Runnable {
 	}
 
 	public void broadcastScores() {
-		GameUser[] users = getUsersArray();
 		GameMessage scored = new GameMessage(GameMessage.SCORED);
-		scored.addParam("Users", users.length);
-		for (int i = 0; i < users.length; i++) {
-			scored.addParam("User" + i, users[i].getUsername());
-			scored.addParam("Score" + i, users[i].getScore());
-		}
+		buildScoresMessage(scored);
 		broadcast(scored);
 	}
 
@@ -118,15 +122,16 @@ public class GameRoom extends GameUserList implements Runnable {
 	}
 
 	private void prepareToPlay() {
+		// increase gameId
+		gameId++;
+
 		// generate array of card codes
-		cardCodesArray = new int[size];
+		Random rand = new Random();
 		int cardTypes = Math.min(40, Math.max(5, size / 2));
-		cardTypes = 1;
-		// TODO: DEBUG
+		cardCodesArray = new int[size];
 		for (int i = 0; i < size; i++) {
 			cardCodesArray[i] = -1;
 		}
-		Random rand = new Random();
 		for (int i = 0; i < cardTypes; i++) {
 			for (int j = 0; j < size / cardTypes; j++) {
 				int k;
@@ -137,6 +142,12 @@ public class GameRoom extends GameUserList implements Runnable {
 			}
 		}
 
+		String superDebug = this + " (game #" + gameId + "):";
+		for (int i = 0; i < size; i++) {
+			superDebug += " " + cardCodesArray[i];
+		}
+		GameIO.debug(superDebug);
+
 		// cache array of users
 		usersArray = getUsersArray();
 
@@ -146,6 +157,9 @@ public class GameRoom extends GameUserList implements Runnable {
 
 		// clear last user played
 		lastUserId = -1;
+
+		// update status
+		status = GameMessage.RS_PLAYING;
 	}
 
 	private boolean isFinished() {
@@ -189,7 +203,7 @@ public class GameRoom extends GameUserList implements Runnable {
 
 	private void playUser(GameUser user) {
 		try {
-			GameIO.debug(this + ": Starting turn for " + user.getUsername(), 3);
+			GameIO.debug(this + ": Starting turn for " + user.getUsername(), 2);
 			int[] openedLocations = new int[2];
 			int[] openedCodes = new int[2];
 			for (int i = 0; i < openedCodes.length; i++) {
@@ -244,7 +258,9 @@ public class GameRoom extends GameUserList implements Runnable {
 
 						GameIO.debug(user.getUsername() + " scored!", 3);
 
-						playUser(user); // continue playing
+						if (!isFinished()) {
+							playUser(user); // continue playing
+						}
 					} else {
 						// hmm
 					}
@@ -253,6 +269,20 @@ public class GameRoom extends GameUserList implements Runnable {
 		} catch (IOException e) {
 			user.byebye();
 		}
+	}
+
+	private void cleanUp() {
+		cardCodesArray = null;
+		usersArray = null;
+
+		// reset users' ready status
+		GameUser[] users = getUsersArray();
+		for (int i = 0; i < users.length; i++) {
+			users[i].setReady(false);
+		}
+
+		// update status
+		status = GameMessage.RS_WAITING;
 	}
 
 	public void run() {
@@ -270,8 +300,9 @@ public class GameRoom extends GameUserList implements Runnable {
 			}
 
 			if (status == GameMessage.RS_WAITING) {
+				GameIO.debug(this + " started waiting for players");
+
 				if (getUsers() > 1 && isEveryoneReady()) {
-					status = GameMessage.RS_PLAYING;
 					prepareToPlay();
 				}
 
@@ -280,14 +311,26 @@ public class GameRoom extends GameUserList implements Runnable {
 				broadcast(m);
 			}
 			if (status == GameMessage.RS_PLAYING) {
+				GameIO.debug(this + " started playing");
+
 				while (!isFinished()) {
 					int userId = nextUserId();
 					if (userId > -1) {
 						GameUser user = usersArray[userId];
 						playUser(user);
 						lastUserId = userId;
+					} else {
+						break;
 					}
 				}
+				if (isFinished()) {
+					GameMessage won = new GameMessage(GameMessage.WON);
+					buildScoresMessage(won);
+					broadcast(won);
+
+					GameIO.debug(this + " ended a game");
+				}
+				cleanUp();
 			}
 		}
 	}

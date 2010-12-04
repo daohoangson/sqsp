@@ -1,7 +1,5 @@
 package org.sqsp;
 
-import java.util.Random;
-
 import com.daohoangson.GameClient;
 import com.daohoangson.GameIO;
 import com.daohoangson.GameMessage;
@@ -33,6 +31,7 @@ public class Client implements GameEventListener, UIManager {
 		if (gameClient.getRoomId() > 0
 				&& gameClient.getRoomStatus() == GameMessage.RS_WAITING) {
 			GameIO.debug("Client.doWait()");
+			gameClient.setReady(true);
 		}
 	}
 
@@ -47,12 +46,11 @@ public class Client implements GameEventListener, UIManager {
 			// TODO: Implement the room selecting feature
 			int rooms = gameClient.rooms();
 			if (rooms == 0) {
-				gameClient.roomMake(400);
+				gameClient.roomMake(20);
 			} else {
 				GameParamList roomInfo = gameClient.roomInfo(0);
 				gameClient.roomJoin(roomInfo.getParamAsInt("RoomID"));
 			}
-			gameClient.setReady(true);
 			break;
 		case GameEvent.JOINED_ROOM:
 		case GameEvent.WAITING:
@@ -63,13 +61,12 @@ public class Client implements GameEventListener, UIManager {
 			break;
 		case GameEvent.TURN:
 			try {
-				Thread.sleep(5000);
+				Thread.sleep(1000);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			Random rand = new Random();
-			gameClient.go(rand.nextInt(400));
+			gameClient.go(gameClient.aiThink());
 			break;
 		case GameEvent.GO_MOVED:
 			String username = ge.gameMessage.getParam("Username");
@@ -77,6 +74,17 @@ public class Client implements GameEventListener, UIManager {
 			int code = ge.gameMessage.getParamAsInt("Code");
 			System.out
 					.println(username + " opened " + location + " ~> " + code);
+			break;
+		case GameEvent.GO_DONE:
+			break;
+		case GameEvent.SCORED:
+			break;
+		case GameEvent.OWN_SCORED:
+			System.out.println("SCORED! "
+					+ gameClient.getRoomScore(gameClient.getUsername()));
+			break;
+		case GameEvent.WON:
+			System.out.println("GAME ENDED");
 			break;
 		}
 	}
