@@ -138,6 +138,12 @@ public class GameRoom {
 		return false;
 	}
 	
+	public boolean isHost(String memberName) {
+		if(members.elementAt(0).equals(memberName))
+			return true;
+		return false;
+	}
+	
 	public boolean setReady(String username){
 		for (int i=0 ; i<members.size() ; i++) {
 			if (members.elementAt(i).equals(username)) {

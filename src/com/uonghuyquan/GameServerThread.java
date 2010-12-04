@@ -48,6 +48,9 @@ public class GameServerThread extends Thread {
 				//room state
 				roomState();
 				
+				GameRoom thisRoom = server.getRoomMgr().getRoomByName(name);
+				System.out.println(thisRoom.getTurn());
+				sleep(100000);
 				//room
 				room();
 			}
@@ -181,22 +184,21 @@ public class GameServerThread extends Thread {
 				thisRoom.buildRoomInfoMessage(m);
 				io.write(m);
 			}
+			io.read();
 			System.out.println("------this room stt:"+thisRoom.getStt());
 		}
 	}
 	private void room() throws IOException, InterruptedException{
 		GameRoom thisRoom = server.getRoomMgr().getRoomByName(name);
-		
+		if(!thisRoom.isHost(name))return;
 		GameMessage m = null;
 		while(!thisRoom.getFinished()){
 			int code[] = new int[2];
-			if(thisRoom.getNameByOffset(thisRoom.getTurn()).equals(name)){
-				System.out.println("name :"+thisRoom.getNameByOffset(thisRoom.getTurn()));
-				System.out.println("turn :"+thisRoom.getTurn());
+			String playing = thisRoom.getNameByOffset(thisRoom.getTurn());
 				int i=0;
 				for(i=0;i<2;i++){
 					m = new GameMessage(GameMessage.TURN);
-					m.addParam("Turn",name);
+					m.addParam("Turn",playing);
 					for(int j = 0;j<server.getConTot();j++){
 						if(server.getRoomId(server.getCliSocks().elementAt(j)) == thisRoom.getId()){
 							io = new GameIO(server.getCliSocks().elementAt(j));
@@ -205,14 +207,15 @@ public class GameServerThread extends Thread {
 					}
 					m = io.read();
 					if(m.getCode() != GameMessage.GO)
-					m = io.read();
+						m = io.read();
 					else{
+						System.out.println("i"+i);
 						int location = m.getParamAsInt("Location");
 						if(location<thisRoom.getSize() && location>-1 && thisRoom.getNotcheat(i) == 0){
 							code[i] = thisRoom.getCode(location);
 							thisRoom.setNotcheat(i);
 							m =  new GameMessage(GameMessage.GO_MOVED);
-							m.addParam("Username",name);
+							m.addParam("Username",playing);
 							m.addParam("Location", location);
 							m.addParam("Code", thisRoom.getCode(i));
 							for(int j = 0;j<server.getConTot();j++){
@@ -229,7 +232,7 @@ public class GameServerThread extends Thread {
 					}
 				}
 				m = new GameMessage(GameMessage.GO_DONE);
-				m.addParam("Username", name);
+				m.addParam("Username", playing);
 				for(int j = 0;j<server.getConTot();j++){
 					if(server.getRoomId(server.getCliSocks().elementAt(j)) == thisRoom.getId()){
 						io = new GameIO(server.getCliSocks().elementAt(j));
@@ -276,9 +279,7 @@ public class GameServerThread extends Thread {
 						Thread.sleep(10000);
 					}
 				}
-			}else thisRoom.setTurn((thisRoom.getTurn()+1)%thisRoom.getUsers());
-			//if no my turn
-			//do nothing
+			thisRoom.setTurn((thisRoom.getTurn()+1)%thisRoom.getUsers());
 		}
 	}
 	private void chat(GameMessage m, String content) throws IOException {
