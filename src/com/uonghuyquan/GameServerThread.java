@@ -198,7 +198,7 @@ public class GameServerThread extends Thread {
 					m = new GameMessage(GameMessage.TURN);
 					m.addParam("Turn",name);
 					io.write(m);
-					
+					System.out.println("i1:"+i);
 					m = io.read();
 					if(m.getCode()==GameMessage.GO){
 						int location = m.getParamAsInt("Location");
@@ -206,7 +206,7 @@ public class GameServerThread extends Thread {
 							code[i] = thisRoom.getCode(location);
 							thisRoom.setNotcheat(i);
 							m =  new GameMessage(GameMessage.GO_MOVED);
-							m.addParam("User",name);
+							m.addParam("Username",name);
 							m.addParam("Location", location);
 							m.addParam("Code", thisRoom.getCode(i));
 							for(int j = 0;j<server.getConTot();j++){
@@ -216,14 +216,14 @@ public class GameServerThread extends Thread {
 								}
 							}
 							i++;
-							System.out.println(i);
+							System.out.println("i2:"+i);
 						}else{
 							io.writeError(GameMessage.ERROR);
 						}
 					}
 					if(m.getCode()==GameMessage.CHAT)
 						chat(m, m.getParam("Content"));
-					System.out.println("i:"+i);
+					System.out.println("i3:"+i);
 					if(i==2)break;
 				}
 				m = new GameMessage(GameMessage.GO_DONE);
@@ -234,9 +234,6 @@ public class GameServerThread extends Thread {
 						io.write(m);
 					}
 				}
-				System.out.println(thisRoom.getTurn());
-				System.out.println(thisRoom.getUsers());
-				System.out.println(code[0] == code[1]);
 				// if true
 				if(code[0] == code[1]){
 					System.out.println("hello");
@@ -245,7 +242,8 @@ public class GameServerThread extends Thread {
 					thisRoom.setScore(thisScore++, thisOffset);
 					m = new GameMessage(GameMessage.SCORED);
 					for(int j=0;j<thisRoom.conCnt;j++){
-						m.addParam("User"+j,thisRoom.getScore(j));
+						m.addParam("User"+j,thisRoom.getNameByOffset(j));
+						m.addParam("Score"+j,thisRoom.getScore(j));
 					}
 					for(int j = 0;j<server.getConTot();j++){
 						if(server.getRoomId(server.getCliSocks().elementAt(j)) == thisRoom.getId()){
@@ -257,7 +255,8 @@ public class GameServerThread extends Thread {
 					if(thisRoom.getScore(thisOffset) >= thisRoom.getSize()/4){
 						m = new GameMessage(GameMessage.WON);
 						for(int j=0;j<thisRoom.conCnt;j++){
-							m.addParam("User"+j,thisRoom.getScore(j));
+							m.addParam("User"+j,thisRoom.getNameByOffset(j));
+							m.addParam("Score"+j,thisRoom.getScore(j));
 						}
 						for(int j = 0;j<server.getConTot();j++){
 							if(server.getRoomId(server.getCliSocks().elementAt(j)) == thisRoom.getId()){
