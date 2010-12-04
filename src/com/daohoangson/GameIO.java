@@ -82,6 +82,10 @@ public class GameIO {
 		// reads the message code
 		do {
 			line = in.readLine();
+			if (line == null) {
+				// this happens sometimes
+				throw new IOException("GameIO failed");
+			}
 			String[] parts = line.split(" ");
 
 			if (parts.length == 2
@@ -94,6 +98,10 @@ public class GameIO {
 		// reads parameters
 		while (true) {
 			line = in.readLine();
+			if (line == null) {
+				// this happens sometimes
+				throw new IOException("GameIO failed");
+			}
 
 			if (line.length() > 0) {
 				m.addParam(line);
@@ -182,7 +190,7 @@ public class GameIO {
 	 *            the debug level
 	 */
 	public static synchronized void debug(String message, int level) {
-		int maxLevel = 4;
+		int maxLevel = 5;
 		if (level <= maxLevel) {
 			System.out.println(message);
 		}
