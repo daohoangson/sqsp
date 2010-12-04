@@ -4,10 +4,9 @@ import javax.swing.JList;
 
 /**
  * 
- * @author Cuong
+ * @author Tran Viet Son
  */
 public class WaitUI extends javax.swing.JFrame {
-
 	private static final long serialVersionUID = -692026364192635696L;
 
 	private final javax.swing.JButton button;
@@ -60,7 +59,8 @@ public class WaitUI extends javax.swing.JFrame {
 														.addGroup(
 																panelLayout
 																		.createSequentialGroup()
-																		.addGap(26,
+																		.addGap(
+																				26,
 																				26,
 																				26)
 																		.addGroup(
@@ -90,7 +90,8 @@ public class WaitUI extends javax.swing.JFrame {
 																												javax.swing.GroupLayout.PREFERRED_SIZE,
 																												75,
 																												javax.swing.GroupLayout.PREFERRED_SIZE)
-																										.addGap(22,
+																										.addGap(
+																												22,
 																												22,
 																												22)))))
 										.addContainerGap()));
@@ -124,9 +125,8 @@ public class WaitUI extends javax.swing.JFrame {
 		layout.setHorizontalGroup(layout.createParallelGroup(
 				javax.swing.GroupLayout.Alignment.LEADING).addGroup(
 				javax.swing.GroupLayout.Alignment.TRAILING,
-				layout.createSequentialGroup()
-						.addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE,
-								Short.MAX_VALUE)
+				layout.createSequentialGroup().addContainerGap(
+						javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
 						.addComponent(panel,
 								javax.swing.GroupLayout.PREFERRED_SIZE,
 								javax.swing.GroupLayout.DEFAULT_SIZE,
@@ -134,12 +134,10 @@ public class WaitUI extends javax.swing.JFrame {
 						.addContainerGap()));
 		layout.setVerticalGroup(layout.createParallelGroup(
 				javax.swing.GroupLayout.Alignment.LEADING).addGroup(
-				layout.createSequentialGroup()
-						.addContainerGap()
-						.addComponent(panel,
-								javax.swing.GroupLayout.PREFERRED_SIZE,
-								javax.swing.GroupLayout.DEFAULT_SIZE,
-								javax.swing.GroupLayout.PREFERRED_SIZE)
+				layout.createSequentialGroup().addContainerGap().addComponent(
+						panel, javax.swing.GroupLayout.PREFERRED_SIZE,
+						javax.swing.GroupLayout.DEFAULT_SIZE,
+						javax.swing.GroupLayout.PREFERRED_SIZE)
 						.addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE,
 								Short.MAX_VALUE)));
 
@@ -162,9 +160,11 @@ public class WaitUI extends javax.swing.JFrame {
 		for (int i = 0; i < ready.length; i++) {
 			if (ready[i] == true) {
 				status[i] = "- " + username[i] + " (READY)";
-			} else
+			} else {
 				status[i] = "- " + username[i] + " (NOT READY)";
+			}
 		}
 		jl = new JList(status);
+
 	}
 }

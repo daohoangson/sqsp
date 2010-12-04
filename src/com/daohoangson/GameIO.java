@@ -14,6 +14,9 @@ import java.net.SocketTimeoutException;
  * 
  */
 public class GameIO {
+	/**
+	 * The initialize socket. Keep it for legacy reason mostly
+	 */
 	private Socket socket;
 	/**
 	 * The output. Initialized by constructor
@@ -26,9 +29,18 @@ public class GameIO {
 	/**
 	 * The default port for the whole system (server and client)
 	 */
-	final public static int DEFAULT_PORT = 22222; // Satan's number >:)
+	final public static int DEFAULT_PORT = 22222;
+	/**
+	 * The last message successfully sent via IO
+	 */
 	public GameMessage lastSentMessage = null;
+	/**
+	 * The last message successfully received via IO
+	 */
 	public GameMessage lastReceivedMessage = null;
+	/**
+	 * Flag to determine this IO object is active or not
+	 */
 	private boolean active = true;
 
 	/**

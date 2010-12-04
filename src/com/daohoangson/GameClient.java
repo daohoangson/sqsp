@@ -8,7 +8,7 @@ import com.daohoangson.event.GameEvent;
 import com.daohoangson.event.GameEventSource;
 
 /**
- * A game client
+ * A game client (core)
  * 
  * @author Dao Hoang Son
  * 
@@ -348,6 +348,11 @@ public class GameClient extends GameEventSource implements Runnable {
 				}
 			} else {
 				prepareToPlay();
+			}
+
+			boolean roomReady = getRoomReady(username);
+			if (roomReady != ready) {
+				setReady(roomReady);
 			}
 
 			GameIO.debug("Updated room info", 4);

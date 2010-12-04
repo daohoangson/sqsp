@@ -9,6 +9,7 @@ import com.daohoangson.GameMessage;
 public class GameRoom extends GameUserList implements Runnable {
 	private static int count = 0;
 	private int id;
+	@SuppressWarnings("unused")
 	private GameServer server;
 	private GameUser host;
 	private int gameId = 0;
@@ -90,13 +91,12 @@ public class GameRoom extends GameUserList implements Runnable {
 
 				if (broadcastMessage.is(GameMessage.ROOM_STATE)) {
 					GameMessage m = users[i].io.read();
-					if (m.is(GameMessage.OK)) {
-						if (m.getParam("Username").equals(
-								users[i].getUsername())) {
-							users[i].setReady(m.getParamAsInt("Ready") == 1);
-						}
+					if (m.is(GameMessage.OK)
+							&& m.getParam("Username").equals(
+									users[i].getUsername())) {
+						users[i].setReady(m.getParamAsInt("Ready") == 1);
 					} else {
-						removeUser(users[i]);
+						users[i].leaveRoom();
 					}
 				}
 			} catch (IOException e) {
@@ -211,7 +211,8 @@ public class GameRoom extends GameUserList implements Runnable {
 				turn.addParam("Turn", user.getUsername());
 				user.io.write(turn);
 
-				GameMessage go = user.io.readWithTimeout(15000);
+				// GameMessage go = user.io.readWithTimeout(15000);
+				GameMessage go = user.io.read();
 
 				if (go != null) {
 					if (go.is(GameMessage.GO)) {
@@ -300,7 +301,7 @@ public class GameRoom extends GameUserList implements Runnable {
 			}
 
 			if (status == GameMessage.RS_WAITING) {
-				GameIO.debug(this + " started waiting for players");
+				GameIO.debug(this + " waiting for players");
 
 				if (getUsers() > 1 && isEveryoneReady()) {
 					prepareToPlay();

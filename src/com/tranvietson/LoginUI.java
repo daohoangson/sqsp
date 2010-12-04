@@ -28,7 +28,7 @@ import javax.swing.WindowConstants;
 
 /**
  * 
- * @author Cuong
+ * @author Tran Viet Son
  */
 public class LoginUI extends JFrame implements ActionListener {
 	private static final long serialVersionUID = 2824207873393605683L;

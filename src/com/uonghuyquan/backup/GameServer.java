@@ -20,7 +20,7 @@ public class GameServer extends GameUserList {
 					Socket socket = serverSocket.accept();
 					GameIO io = new GameIO(socket);
 
-					new Thread(new GameThread(this, io)).start();
+					new GameThread(this, io);
 				} catch (Exception e) {
 					GameIO.debug(e.toString());
 				}

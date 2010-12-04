@@ -10,6 +10,7 @@ public class GameUser {
 	public GameServer server;
 	public GameIO io;
 	public GameRoom room = null;
+	private boolean validated = false;
 	private String username = null;
 	private boolean ready = false;
 	private int score = 0;
@@ -19,15 +20,20 @@ public class GameUser {
 		this.server = server;
 		this.io = io;
 
+		GameIO.debug("GameUser created", 3);
+	}
+
+	public void start() {
 		try {
 			try {
-				GameIO.debug("GameUser created", 3);
-				if (io.read().is(GameMessage.HELLO)) {
-					io.writeOK();
+				if (!validated) {
+					if (io.read().is(GameMessage.HELLO)) {
+						io.writeOK();
+					}
+					GameIO.debug("Connection validated", 1);
+					validated = true;
 				}
-				GameIO.debug("Connection validated", 1);
 				login();
-				GameIO.debug("Logged In");
 				loop();
 			} catch (GameException ge) {
 				io.writeError(ge.getErrorCode());
@@ -46,12 +52,21 @@ public class GameUser {
 		}
 
 		GameIO.debug("Connection lost. Cleaning stuff from the Server", 1);
+
+		// order is important!
+		active = false;
+		io.disable();
+		leaveRoom();
+		server.removeUser(this);
+	}
+
+	public void leaveRoom() {
 		if (room != null) {
 			room.removeUser(this);
+			if (active) {
+				new GameThread(this);
+			}
 		}
-		server.removeUser(this);
-		io.disable();
-		active = false;
 	}
 
 	private void login() throws IOException, GameException {
@@ -81,6 +96,7 @@ public class GameUser {
 				this.username = username;
 				server.addUser(this);
 				io.writeOK();
+				GameIO.debug("Logged In");
 			} else {
 				io.writeError(GameMessage.E_INVALID);
 			}
