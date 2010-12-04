@@ -75,6 +75,24 @@ public class GameClient extends GameEventSource implements Runnable {
 						io.writeError(GameMessage.E_INVALID);
 					}
 					continue;
+				case GameMessage.TURN:
+					String turnUsername = m.getParam("Turn");
+					if (turnUsername.equals(username)) {
+						fireGameEvent(GameEvent.TURN);
+					}
+					continue;
+				case GameMessage.GO_MOVED:
+					fireGameEvent(GameEvent.GO_MOVED, m);
+					continue;
+				case GameMessage.GO_DONE:
+					fireGameEvent(GameEvent.GO_DONE, m);
+					continue;
+				case GameMessage.SCORED:
+					fireGameEvent(GameEvent.SCORED, m);
+					continue;
+				case GameMessage.WON:
+					fireGameEvent(GameEvent.WON, m);
+					continue;
 				}
 			} catch (IOException e) {
 				fireGameEvent(GameEvent.IOException);
@@ -210,6 +228,13 @@ public class GameClient extends GameEventSource implements Runnable {
 		}
 
 		return null;
+	}
+
+	public void go(int location) {
+		GameMessage go = new GameMessage(GameMessage.GO);
+		go.addParam("Username", username);
+		go.addParam("Location", location);
+		write(go);
 	}
 
 	private void readRoomInfoMessage(GameMessage m) {

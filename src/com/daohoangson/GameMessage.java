@@ -33,14 +33,15 @@ public class GameMessage extends GameParamList {
 	public final static int ROOMS = 8;
 	public final static int ROOM_STATE = 9;
 
-	public final static int TURN = 920;
+	public final static int TURN = 20;
 	public final static int GO = 21;
 	public final static int GO_MOVED = 921;
-	public final static int SCORED = 922;
-	public final static int WON = 923;
+	public final static int GO_DONE = 922;
+	public final static int SCORED = 923;
+	public final static int WON = 930;
 
-	public final static int CHAT = 30;
-	public final static int CHATTED = 930;
+	public final static int CHAT = 100;
+	public final static int CHATTED = 9100;
 	/* Message Code - END */
 
 	/* Error Code */
@@ -167,6 +168,9 @@ public class GameMessage extends GameParamList {
 		if (code.equals("GO_MOVED")) {
 			return GameMessage.GO_MOVED;
 		}
+		if (code.equals("GO_DONE")) {
+			return GameMessage.GO_DONE;
+		}
 		if (code.equals("SCORED")) {
 			return GameMessage.SCORED;
 		}
@@ -224,6 +228,8 @@ public class GameMessage extends GameParamList {
 			return "GO";
 		case GO_MOVED:
 			return "GO_MOVED";
+		case GO_DONE:
+			return "GO_DONE";
 		case SCORED:
 			return "SCORED";
 		case WON:

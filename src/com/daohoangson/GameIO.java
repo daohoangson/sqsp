@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 
 /**
  * IO Manager via socket
@@ -13,6 +14,7 @@ import java.net.Socket;
  * 
  */
 public class GameIO {
+	private Socket socket;
 	/**
 	 * The output. Initialized by constructor
 	 */
@@ -27,6 +29,7 @@ public class GameIO {
 	final public static int DEFAULT_PORT = 22222; // Satan's number >:)
 	public GameMessage lastSentMessage = null;
 	public GameMessage lastReceivedMessage = null;
+	private boolean active = true;
 
 	/**
 	 * Constructs from a {@linkplain Socket socket} from server or client
@@ -37,6 +40,7 @@ public class GameIO {
 	 *             if an IOException occurs in middle of its operation
 	 */
 	public GameIO(Socket socket) throws IOException {
+		this.socket = socket;
 		out = new PrintWriter(socket.getOutputStream());
 		in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
@@ -51,6 +55,9 @@ public class GameIO {
 	 * @throws IOException
 	 */
 	public void write(GameMessage m) throws IOException {
+		if (!active) {
+			return;
+		}
 		out.print(m.prepare());
 		out.flush();
 		lastSentMessage = m;
@@ -65,6 +72,10 @@ public class GameIO {
 	 * @throws IOException
 	 */
 	public GameMessage read() throws IOException {
+		if (!active) {
+			return new GameMessage(GameMessage.ERROR);
+		}
+
 		GameMessage m = new GameMessage();
 		String line;
 
@@ -107,6 +118,18 @@ public class GameIO {
 		return m;
 	}
 
+	public GameMessage readWithTimeout(int timeout) throws IOException {
+		socket.setSoTimeout(timeout);
+		GameMessage m;
+		try {
+			m = read();
+		} catch (SocketTimeoutException e) {
+			m = null;
+		}
+		socket.setSoTimeout(0);
+		return m;
+	}
+
 	/**
 	 * Writes an OK message. This is a wrapper method
 	 * 
@@ -134,6 +157,10 @@ public class GameIO {
 		write(m);
 	}
 
+	public void disable() {
+		active = false;
+	}
+
 	/**
 	 * Outputs debug information via {@link GameIO#debug(String, int)} with a
 	 * level of 0
@@ -155,7 +182,7 @@ public class GameIO {
 	 *            the debug level
 	 */
 	public static synchronized void debug(String message, int level) {
-		int maxLevel = 5;
+		int maxLevel = 4;
 		if (level <= maxLevel) {
 			System.out.println(message);
 		}

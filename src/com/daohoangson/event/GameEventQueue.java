@@ -20,7 +20,7 @@ public class GameEventQueue implements Runnable {
 		return GameEventQueue.instance;
 	}
 
-	public synchronized void add(GameEvent ge, Iterator<GameEventListener> i) {
+	public void add(GameEvent ge, Iterator<GameEventListener> i) {
 		queue.add(new GameEventQueueItem(ge, i));
 	}
 
@@ -31,8 +31,11 @@ public class GameEventQueue implements Runnable {
 					// wait
 				}
 				GameEventQueueItem q = queue.get(0);
-				while (q.i.hasNext()) {
-					q.i.next().handleGameEvent(q.ge);
+				if (q != null) {
+					while (q.i.hasNext()) {
+						q.i.next().handleGameEvent(q.ge);
+					}
+					queue.remove(0);
 				}
 			}
 		}

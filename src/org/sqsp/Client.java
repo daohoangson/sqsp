@@ -1,5 +1,7 @@
 package org.sqsp;
 
+import java.util.Random;
+
 import com.daohoangson.GameClient;
 import com.daohoangson.GameIO;
 import com.daohoangson.GameMessage;
@@ -22,7 +24,7 @@ public class Client implements GameEventListener, UIManager {
 		if (gameClient.getUsername() == null) {
 			// only start login procedure if the user hasn't logged in yet
 			GameIO.debug("Client.doLogin()");
-			loginUI = new LoginUI();
+			loginUI = new LoginUI(this);
 			loginUI.setVisible(true);
 		}
 	}
@@ -42,7 +44,7 @@ public class Client implements GameEventListener, UIManager {
 	public void handleGameEvent(GameEvent ge) {
 		switch (ge.getType()) {
 		case GameEvent.LOGGED_IN:
-			// TODO: Room selecting?
+			// TODO: Implement the room selecting feature
 			int rooms = gameClient.rooms();
 			if (rooms == 0) {
 				gameClient.roomMake(400);
@@ -58,6 +60,23 @@ public class Client implements GameEventListener, UIManager {
 			break;
 		case GameEvent.STARTED:
 			doPlay();
+			break;
+		case GameEvent.TURN:
+			try {
+				Thread.sleep(5000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			Random rand = new Random();
+			gameClient.go(rand.nextInt(400));
+			break;
+		case GameEvent.GO_MOVED:
+			String username = ge.gameMessage.getParam("Username");
+			int location = ge.gameMessage.getParamAsInt("Location");
+			int code = ge.gameMessage.getParamAsInt("Code");
+			System.out
+					.println(username + " opened " + location + " ~> " + code);
 			break;
 		}
 	}

@@ -13,6 +13,11 @@ public class GameEvent extends EventObject {
 	public final static int JOINED_ROOM = 2;
 	public final static int WAITING = 3;
 	public final static int STARTED = 4;
+	public final static int TURN = 5;
+	public final static int SCORED = 6;
+	public final static int GO_MOVED = 7;
+	public final static int GO_DONE = 8;
+	public final static int WON = 9;
 	public final static int IOException = 9999;
 
 	public GameEvent(Object source, int type, GameMessage m) {

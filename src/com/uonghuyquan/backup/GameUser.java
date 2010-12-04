@@ -12,6 +12,8 @@ public class GameUser {
 	public GameRoom room = null;
 	private String username = null;
 	private boolean ready = false;
+	private int score = 0;
+	private boolean active = true;
 
 	public GameUser(GameServer server, GameIO io) {
 		this.server = server;
@@ -39,11 +41,17 @@ public class GameUser {
 	}
 
 	public void byebye() {
+		if (!active) {
+			return;
+		}
+
 		GameIO.debug("Connection lost. Cleaning stuff from the Server", 1);
 		if (room != null) {
 			room.removeUser(this);
 		}
 		server.removeUser(this);
+		io.disable();
+		active = false;
 	}
 
 	private void login() throws IOException, GameException {
@@ -143,8 +151,35 @@ public class GameUser {
 		return username;
 	}
 
+	public void setReady(boolean ready) {
+		this.ready = ready;
+	}
+
 	public boolean isReady() {
 		return ready;
+	}
+
+	public void setScore(int score) {
+		if (room != null) {
+			this.score = score;
+			room.broadcastScores();
+		}
+	}
+
+	public void resetScore() {
+		score = 0;
+	}
+
+	public int getScore() {
+		if (room != null) {
+			return score;
+		} else {
+			return 0;
+		}
+	}
+
+	public boolean isActive() {
+		return active;
 	}
 
 	@Override
