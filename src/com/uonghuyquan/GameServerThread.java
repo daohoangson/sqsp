@@ -204,12 +204,21 @@ public class GameServerThread extends Thread {
 						io = new GameIO(server.getCliSocks().elementAt(j));
 						io.write(m);
 					}
-					System.out.println("dfsdf");
 				}
-				m = io.read();
+				for(int j = 0;j<server.getConTot();j++){
+					if(server.getRoomId(server.getCliSocks().elementAt(j)) == thisRoom.getId() && server.getCliNames().elementAt(j).equals(playing)){
+						io = new GameIO(server.getCliSocks().elementAt(j));
+						m = io.read();
+					}
+				}
 				System.out.println("danh dau");
 				if(m.getCode() != GameMessage.GO)
-					m = io.read();
+					for(int j = 0;j<server.getConTot();j++){
+						if(server.getRoomId(server.getCliSocks().elementAt(j)) == thisRoom.getId() && server.getCliNames().elementAt(j).equals(playing)){
+							io = new GameIO(server.getCliSocks().elementAt(j));
+							m = io.read();
+						}
+					}
 				else{
 					System.out.println("lay dc lenh go");
 					int location = m.getParamAsInt("Location");
