@@ -224,7 +224,7 @@ public class GameServerThread extends Thread {
 					if(m.getCode()==GameMessage.CHAT)
 						chat(m, m.getParam("Content"));
 					System.out.println("i:"+i);
-					if(i==1)break;
+					if(i==2)break;
 				}
 				m = new GameMessage(GameMessage.GO_DONE);
 				m.addParam("Username", name);
@@ -234,6 +234,9 @@ public class GameServerThread extends Thread {
 						io.write(m);
 					}
 				}
+				System.out.println(thisRoom.getTurn());
+				System.out.println(thisRoom.getUsers());
+				System.out.println(code[0] == code[1]);
 				// if true
 				if(code[0] == code[1]){
 					System.out.println("hello");
