@@ -1,4 +1,4 @@
-package com.uonghuyquan;
+package Server;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -16,9 +16,8 @@ import java.io.IOException;
 import java.net.*;
 import java.util.Vector;
 
-import com.daohoangson.GameIO;
-import com.daohoangson.GameMessage;
-
+import shared.GameIO;
+import shared.GameMessage;
 
 
 public class GameServer extends Frame implements ActionListener, Runnable {

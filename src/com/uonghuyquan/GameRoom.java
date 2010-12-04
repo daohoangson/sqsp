@@ -1,10 +1,9 @@
-package com.uonghuyquan;
+package Server;
 
 import java.util.Random;
 import java.util.Vector;
 
-import com.daohoangson.GameMessage;
-
+import shared.GameMessage;
 
 public class GameRoom {
 	int id;								//Room Id.
@@ -13,7 +12,8 @@ public class GameRoom {
 	int conCnt;							//Number of connections.
 	int stt;							//1 - playing,0 - waiting
 	final static int maxInRoom = 4;		//Maximum members.
-	int code[];							//Code of result 
+	int code[];							//Code of result
+	int notcheat[];						
     private Vector<String> members;		//Administrators.
     private Vector<String> permissions;	//Permissions of chat room. (0- host, 1- player).
     private Vector<Boolean> memstt;		//status of menbers
@@ -35,12 +35,14 @@ public class GameRoom {
 		memstt = new Vector<Boolean>(40);
 		stt = 0;
 		
+		notcheat = new int[size];
 		int cardTypes = size / 10;
 		if(size <= 10)cardTypes=size/2;
 		code = new int[size];
 		Random rand = new Random();
 		for(int i=0;i<size;i++){
 			code[i] = -1;
+			notcheat[i] = 0;
 		}
 		for(int i = 0; i < cardTypes;i++) {
 			for(int j = 0; j < size/cardTypes; j++) {
@@ -51,6 +53,12 @@ public class GameRoom {
 				code[k] = i;
 			}
 		}
+	}
+	public void setNotcheat(int index) {
+		this.notcheat[index] = 1;
+	}
+	public int getNotcheat(int index) {
+		return notcheat[index];
 	}
 	public void setOffset(int offset) {
 		this.offset = offset;
