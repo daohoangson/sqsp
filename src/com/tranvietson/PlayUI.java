@@ -12,10 +12,15 @@ public class PlayUI extends JFrame implements ActionListener {
 
 	private final UIManager manager;
 	private final int size;
+	private Card[] cards;
 
 	public PlayUI(UIManager manager, int size) {
 		this.manager = manager;
 		this.size = size;
+
+		for (int id = 0; id < size; id++) {
+			cards[id] = new Card(id);
+		}
 
 		int gridColumn = (int) Math.ceil(Math.sqrt(size));
 		setLayout(new GridLayout(0, gridColumn));
@@ -36,12 +41,17 @@ public class PlayUI extends JFrame implements ActionListener {
 	}
 
 	public void flipCard(int cardId, int pictureId) {
+		cards[cardId].open(pictureId);
 	}
 
 	public void flipCards() {
+		for (int i = 0; i < size; i++) {
+			cards[i].close();
+		}
 	}
 
 	public void destroyCards(int cardId1, int cardId2) {
-
+		cards[cardId1].setEnabled(false);
+		cards[cardId2].setEnabled(false);
 	}
 }
