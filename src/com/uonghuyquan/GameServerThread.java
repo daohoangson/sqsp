@@ -217,6 +217,8 @@ public class GameServerThread extends Thread {
 				// if true
 				if(code[0] == code[1]){
 					int thisOffset = thisRoom.getTurn();
+					System.out.println("anh hoc tro test"+thisOffset);
+					System.out.println("sadhjahssdv     "+thisRoom.getScore(1));
 					int thisScore = thisRoom.getScore(thisOffset);
 					thisRoom.setScore(thisScore++, thisOffset);
 					m = new GameMessage(GameMessage.SCORED);

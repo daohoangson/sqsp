@@ -32,6 +32,8 @@ public class GameRoom {
 		members = new Vector<String>(maxInRoom);
 		permissions = new Vector<String>(maxInRoom);
 		scores = new Vector<Integer>(maxInRoom);
+		for(int i=0;i<maxInRoom;i++)
+			scores.add(0);
 		memstt = new Vector<Boolean>(40);
 		stt = 0;
 		
