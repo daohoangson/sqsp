@@ -193,17 +193,15 @@ public class GameServerThread extends Thread {
 			if(thisRoom.getNameByOffset(thisRoom.getTurn()).equals(name)){
 				System.out.println("name :"+thisRoom.getNameByOffset(thisRoom.getTurn()));
 				System.out.println("turn :"+thisRoom.getTurn());
-				//m = io.read();
-				//if(m.getCode()==GameMessage.CHAT)
-				//	chat(m, m.getParam("Content"));
 				int i=0;
 				for(i=0;i<2;i++){
 					m = new GameMessage(GameMessage.TURN);
 					m.addParam("Turn",name);
 					io.write(m);
-					System.out.println("send GO:"+i);
 					m = io.read();
-					if(m.getCode() == GameMessage.GO){
+					if(m.getCode() != GameMessage.GO)
+					m = io.read();
+					else{
 						int location = m.getParamAsInt("Location");
 						if(location<thisRoom.getSize() && location>-1 && thisRoom.getNotcheat(i) == 0){
 							code[i] = thisRoom.getCode(location);
@@ -219,6 +217,7 @@ public class GameServerThread extends Thread {
 								}
 							}
 							i++;
+							System.out.println("send GO:"+i);
 						}else{
 							io.writeError(GameMessage.ERROR);
 						}
