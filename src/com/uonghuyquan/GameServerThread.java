@@ -197,6 +197,7 @@ public class GameServerThread extends Thread {
 			System.out.println("turn:"+playing);
 			int i;
 			for(i=0;i<2;i++){
+				System.out.println("loop");
 				m = new GameMessage(GameMessage.TURN);
 				m.addParam("Turn",playing);
 				for(int j = 0;j<server.getConTot();j++){
@@ -206,12 +207,12 @@ public class GameServerThread extends Thread {
 					}
 				}
 				m = io.read();
-				//if(m.getCode() != GameMessage.GO)
-				//	m = io.read();
-				//else{
+				if(m.getCode() != GameMessage.GO)
+					m = io.read();
+				else{
 					int location = m.getParamAsInt("Location");
 					if(location<thisRoom.getSize() && location>-1 && thisRoom.getNotcheat(i) == 0){
-					code[i] = thisRoom.getCode(location);
+						code[i] = thisRoom.getCode(location);
 						thisRoom.setNotcheat(i);
 						m =  new GameMessage(GameMessage.GO_MOVED);
 						m.addParam("Username",playing);
@@ -224,11 +225,11 @@ public class GameServerThread extends Thread {
 							}
 						}
 						i++;
-						System.out.println("send GO:"+i);
+						System.out.println("send"+i);
 					}else{
 						io.writeError(GameMessage.ERROR);
 					}
-				//}
+				}
 			}
 			m = new GameMessage(GameMessage.GO_DONE);
 			m.addParam("Username", playing);
