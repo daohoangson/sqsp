@@ -1,6 +1,7 @@
 package com.tranvietson;
 
 import java.awt.Dimension;
+import java.awt.Frame;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -18,19 +19,20 @@ public class PlayUI extends JFrame implements ActionListener {
 		this.manager = manager;
 		this.size = size;
 
-		for (int id = 0; id < size; id++) {
-			cards[id] = new Card(id);
-		}
-
+		cards = new Card[size];
 		int gridColumn = (int) Math.ceil(Math.sqrt(size));
 		setLayout(new GridLayout(0, gridColumn));
 		for (int i = 0; i < size; i++) {
 			Card card = new Card(i);
 			card.setPreferredSize(new Dimension(100, 100));
-			// card.setActionCommand("Card" + i);
 			card.addActionListener(this);
 			add(card);
+
+			cards[i] = card;
 		}
+
+		pack();
+		setExtendedState(getExtendedState() | Frame.MAXIMIZED_BOTH);
 	}
 
 	@Override

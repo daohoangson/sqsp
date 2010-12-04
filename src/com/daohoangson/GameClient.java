@@ -24,7 +24,10 @@ public class GameClient extends GameEventSource implements Runnable {
 	private int roomId = 0;
 	private boolean host = false;
 	private boolean ready = false;
+	private boolean turn = false;
+	private int[] openedLocations = null;
 	private GameParamList roomInfo = null;
+	private GameParamList scores = null;
 
 	/**
 	 * Constructs
@@ -60,6 +63,7 @@ public class GameClient extends GameEventSource implements Runnable {
 				GameMessage m = io.read();
 
 				GameIO.debug("Received a message: " + m.getCode(), 4);
+				turn = false;
 
 				switch (m.getCode()) {
 				case GameMessage.ROOM_STATE:
@@ -78,6 +82,7 @@ public class GameClient extends GameEventSource implements Runnable {
 				case GameMessage.TURN:
 					String turnUsername = m.getParam("Turn");
 					if (turnUsername.equals(username)) {
+						turn();
 						fireGameEvent(GameEvent.TURN);
 					}
 					continue;
@@ -88,6 +93,7 @@ public class GameClient extends GameEventSource implements Runnable {
 					fireGameEvent(GameEvent.GO_DONE, m);
 					continue;
 				case GameMessage.SCORED:
+					readScoreMessage(m);
 					fireGameEvent(GameEvent.SCORED, m);
 					continue;
 				case GameMessage.WON:
@@ -230,11 +236,33 @@ public class GameClient extends GameEventSource implements Runnable {
 		return null;
 	}
 
+	private void turn() {
+		turn = true;
+		openedLocations = new int[2];
+		for (int i = 0; i < openedLocations.length; i++) {
+			openedLocations[i] = -1;
+		}
+	}
+
 	public void go(int location) {
+		if (!turn) {
+			return;
+		}
 		GameMessage go = new GameMessage(GameMessage.GO);
 		go.addParam("Username", username);
 		go.addParam("Location", location);
 		write(go);
+
+		for (int i = 0; i < openedLocations.length; i++) {
+			if (openedLocations[i] == -1) {
+				openedLocations[i] = location;
+				break;
+			}
+		}
+	}
+
+	public int[] getOpenedLocations() {
+		return openedLocations;
 	}
 
 	private void readRoomInfoMessage(GameMessage m) {
@@ -262,6 +290,45 @@ public class GameClient extends GameEventSource implements Runnable {
 		} else {
 			GameIO.debug("readRoomInfoMessage invalid", 4);
 		}
+	}
+
+	private void readScoreMessage(GameMessage m) {
+		GameParamList oldScores = scores;
+		scores = new GameParamList(m);
+
+		if (oldScores != null) {
+			int oldUserId = findUserId(oldScores, username);
+			int oldScore = -1;
+			if (oldUserId > -1) {
+				oldScore = oldScores.getParamAsInt("Score" + oldUserId);
+			}
+
+			int newUserId = findUserId(scores, username);
+			int newScore = -1;
+			if (newUserId > -1) {
+				newScore = scores.getParamAsInt("Score" + newUserId);
+			}
+
+			if (newScore != oldScore) {
+				fireGameEvent(GameEvent.OWN_SCORED);
+			}
+		}
+
+		GameIO.debug("Updated scores", 3);
+	}
+
+	private int findUserId(GameParamList params, String username) {
+		int users = params.getParamAsInt("Users");
+		int userId = -1;
+		if (params != null) {
+			for (int i = 0; i < users; i++) {
+				if (params.getParam("User" + i).equals(username)) {
+					userId = i;
+					break;
+				}
+			}
+		}
+		return userId;
 	}
 
 	/**
@@ -316,8 +383,22 @@ public class GameClient extends GameEventSource implements Runnable {
 		return getRoomInfo("User" + offset);
 	}
 
-	public boolean getRoomReady(int offset) {
-		return Integer.valueOf(getRoomInfo("Ready" + offset)) == 1;
+	public boolean getRoomReady(String username) {
+		int userId = findUserId(roomInfo, username);
+		if (userId > -1) {
+			return Integer.valueOf(getRoomInfo("Ready" + userId)) == 1;
+		} else {
+			return false;
+		}
+	}
+
+	public int getRoomScore(String username) {
+		int userId = findUserId(scores, username);
+		if (userId > -1) {
+			return scores.getParamAsInt("Score" + userId);
+		} else {
+			return 0;
+		}
 	}
 
 	public int getRoomStatus() {
