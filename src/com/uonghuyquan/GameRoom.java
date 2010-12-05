@@ -13,36 +13,37 @@ public class GameRoom {
 	int stt;							//1 - playing,0 - waiting
 	final static int maxInRoom = 4;		//Maximum members.
 	int code[];							//Code of result
-	int notcheat[];						
+	boolean notcheat[];						
     private Vector<String> members;		//Administrators.
     private Vector<String> permissions;	//Permissions of chat room. (0- host, 1- player).
     private Vector<Boolean> memstt;		//status of menbers
-    private Vector<Integer> scores;		//score
     boolean finished;					//true or false
+    int turn;
+    int scores[];
     
     //Constructor
 	public GameRoom(int id, int size) {
 		this.offset = -1;
 		this.id = id;
 		this.size = size;
+		turn = 0;
 		finished = false;
 		conCnt = 0;
 		members = new Vector<String>(maxInRoom);
 		permissions = new Vector<String>(maxInRoom);
-		scores = new Vector<Integer>(maxInRoom);
-		for(int i=0;i<maxInRoom;i++)
-			scores.add(0);
 		memstt = new Vector<Boolean>(40);
 		stt = 0;
 		
-		notcheat = new int[size];
+		scores = new int[maxInRoom];
+		
+		notcheat = new boolean[size];
 		int cardTypes = size / 10;
 		if(size <= 10)cardTypes=size/2;
 		code = new int[size];
 		Random rand = new Random();
 		for(int i=0;i<size;i++){
 			code[i] = -1;
-			notcheat[i] = 0;
+			notcheat[i] = false;
 		}
 		for(int i = 0; i < cardTypes;i++) {
 			for(int j = 0; j < size/cardTypes; j++) {
@@ -54,11 +55,11 @@ public class GameRoom {
 			}
 		}
 	}
-	public void setNotcheat(int index) {
-		this.notcheat[index] = 1;
+	public void used(int index) {
+		this.notcheat[index] = true;
 	}
-	public int getNotcheat(int index) {
-		return notcheat[index];
+	public boolean Unused(int index) {
+		return !notcheat[index];
 	}
 	public void setOffset(int offset) {
 		this.offset = offset;
@@ -179,6 +180,9 @@ public class GameRoom {
 	public String getNameByOffset(int index){
 		return members.elementAt(index);
 	}
+	public String getPlaying(){
+		return members.elementAt(turn);
+	}
 	public int getUsers(){
 		return members.size();
 	}
@@ -219,11 +223,22 @@ public class GameRoom {
 	public boolean getFinished(){
 		return this.finished;
 	}
-	public void setScore(int score, int offset) {
-		this.scores.setElementAt(offset, score);
+	public int getTurn() {
+		return turn;
 	}
-	public int getScore(int offset) {
-		return scores.elementAt(offset);
+	public void setTurn(int turn) {
+		this.turn = turn;
+	}
+	public int getScores(int index) {
+		return scores[index];
+	}
+	public void gaintScores(int index) {
+		this.scores[index]++;
+	}
+	public void upTurn(){
+		turn++;
+		turn = turn%conCnt;
+		setTurn(turn);
 	}
 }
 

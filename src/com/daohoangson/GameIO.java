@@ -202,7 +202,7 @@ public class GameIO {
 	 *            the debug level
 	 */
 	public static synchronized void debug(String message, int level) {
-		int maxLevel = 4;
+		int maxLevel = 5;
 		if (level <= maxLevel) {
 			System.out.println(message);
 		}

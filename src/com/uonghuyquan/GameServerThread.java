@@ -3,6 +3,7 @@ package com.uonghuyquan;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.Random;
+import java.util.Vector;
 
 import com.daohoangson.GameIO;
 import com.daohoangson.GameMessage;
@@ -11,7 +12,7 @@ import com.daohoangson.GameMessage;
 public class GameServerThread extends Thread {
 	//Data members:
 	public Socket socket;			//Client socket
-	public GameServer server;			//Main server class
+	public GameServer server;		//Main server class
 	private GameIO io;				//Input/Output
 	private String name;			//User Name
 	//Constructor
@@ -180,23 +181,23 @@ public class GameServerThread extends Thread {
 				m = new GameMessage(GameMessage.ROOM_STATE);
 				thisRoom.buildRoomInfoMessage(m);
 				io.write(m);
+				do{m = io.read();}
+				while(m == null);
 			}
 			System.out.println("------this room stt:"+thisRoom.getStt());
 		}
 	}
 	private void room() throws IOException, InterruptedException{
 		GameRoom thisRoom = server.getRoomMgr().getRoomByName(name);
-		if(!thisRoom.isHost(name))return;
-		else System.out.println("host:"+name);
 		GameMessage m = null;
-		int turn = 0;
 		while(!thisRoom.getFinished()){
 			int code[] = new int[2];
-			String playing = thisRoom.getNameByOffset(turn);
+			String playing = thisRoom.getPlaying();
+			if(!playing.equals(name))continue;
 			System.out.println("turn:"+playing);
-			int i;
+			int i, err = 0;
 			for(i=0;i<2;i++){
-				System.out.println("loop");
+				System.out.println("----------------------join loop");
 				m = new GameMessage(GameMessage.TURN);
 				m.addParam("Turn",playing);
 				for(int j = 0;j<server.getConTot();j++){
@@ -205,42 +206,30 @@ public class GameServerThread extends Thread {
 						io.write(m);
 					}
 				}
-				for(int j = 0;j<server.getConTot();j++){
-					if(server.getRoomId(server.getCliSocks().elementAt(j)) == thisRoom.getId() && server.getCliNames().elementAt(j).equals(playing)){
-						io = new GameIO(server.getCliSocks().elementAt(j));
-						m = io.read();
-					}
-				}
-				if(m.getCode() != GameMessage.GO)
+				io = new GameIO(socket);
+				m = io.read();
+				int location = m.getParamAsInt("Location");
+				System.out.println("---------------------------------------------------location: "+location);
+				if(location < thisRoom.getSize() && location > -1 && thisRoom.Unused(i)){
+					code[i] = thisRoom.getCode(location);
+					thisRoom.used(i);
+					m =  new GameMessage(GameMessage.GO_MOVED);
+					m.addParam("Username",playing);
+					m.addParam("Location", location);
+					m.addParam("Code", thisRoom.getCode(i));
 					for(int j = 0;j<server.getConTot();j++){
-						if(server.getRoomId(server.getCliSocks().elementAt(j)) == thisRoom.getId() && server.getCliNames().elementAt(j).equals(playing)){
+						if(server.getRoomId(server.getCliSocks().elementAt(j)) == thisRoom.getId()){
 							io = new GameIO(server.getCliSocks().elementAt(j));
-							m = io.read();
+							System.out.println("------------------------------send"+i);
+							io.write(m);
 						}
 					}
-				else{
-					int location = m.getParamAsInt("Location");
-					System.out.println(location);
-					if(location<thisRoom.getSize() && location>-1 && thisRoom.getNotcheat(i) == 0){
-						code[i] = thisRoom.getCode(location);
-						thisRoom.setNotcheat(i);
-						m =  new GameMessage(GameMessage.GO_MOVED);
-						m.addParam("Username",playing);
-						m.addParam("Location", location);
-						m.addParam("Code", thisRoom.getCode(i));
-						for(int j = 0;j<server.getConTot();j++){
-							if(server.getRoomId(server.getCliSocks().elementAt(j)) == thisRoom.getId()){
-								io = new GameIO(server.getCliSocks().elementAt(j));
-								io.write(m);
-							}
-						}
-						i++;
-						System.out.println("send"+i);
-					}else{
-						io.writeError(GameMessage.ERROR);
-					}
+				}else{
+					io.writeError(GameMessage.ERROR);
+					err = 1;
 				}
 			}
+			System.out.println("---------------------------------------done");
 			m = new GameMessage(GameMessage.GO_DONE);
 			m.addParam("Username", playing);
 			for(int j = 0;j<server.getConTot();j++){
@@ -250,16 +239,13 @@ public class GameServerThread extends Thread {
 				}
 			}
 			// if true
-			if(code[0] == code[1]){
+			if(code[0] == code[1] && err ==0){
 				System.out.println("hello");
-				int thisOffset = turn;
-				int thisScore = thisRoom.getScore(thisOffset);
-				thisScore++;
-				thisRoom.setScore(thisScore, thisOffset);
+				thisRoom.gaintScores(thisRoom.getTurn());
 				m = new GameMessage(GameMessage.SCORED);
 				for(int j=0;j<thisRoom.conCnt;j++){
 					m.addParam("User"+j,thisRoom.getNameByOffset(j));
-					m.addParam("Score"+j,thisRoom.getScore(j));
+					m.addParam("Score"+j,thisRoom.getScores(j));
 				}
 				for(int j = 0;j<server.getConTot();j++){
 					if(server.getRoomId(server.getCliSocks().elementAt(j)) == thisRoom.getId()){
@@ -268,11 +254,11 @@ public class GameServerThread extends Thread {
 					}
 				}
 				//if win
-				if(thisRoom.getScore(thisOffset) >= thisRoom.getSize()/4){
+				if(thisRoom.getScores(thisRoom.getTurn()) >= thisRoom.getSize()/4){
 					m = new GameMessage(GameMessage.WON);
 					for(int j=0;j<thisRoom.conCnt;j++){
 						m.addParam("User"+j,thisRoom.getNameByOffset(j));
-						m.addParam("Score"+j,thisRoom.getScore(j));
+						m.addParam("Score"+j,thisRoom.getScores(j));
 					}
 					for(int j = 0;j<server.getConTot();j++){
 						if(server.getRoomId(server.getCliSocks().elementAt(j)) == thisRoom.getId()){
@@ -290,21 +276,9 @@ public class GameServerThread extends Thread {
 					Thread.sleep(10000);
 				}
 			}
-			turn++;
-			turn = turn%thisRoom.getUsers();
+			thisRoom.upTurn();
 		}
 	}
-	private void chat(GameMessage m, String content) throws IOException {
-		GameRoom thisRoom = server.getRoomMgr().getRoomByName(name);
-		m = new GameMessage(GameMessage.CHAT);
-		m.addParam("Content",content);
-		m.addParam("User", name);
-		for(int j = 0;j<server.getConTot();j++){
-			if(server.getRoomId(server.getCliSocks().elementAt(j)) == thisRoom.getId()){
-				io = new GameIO(server.getCliSocks().elementAt(j));
-				io.write(m);
-			}
-		}
-	}
+
 }
 /* EOF */
