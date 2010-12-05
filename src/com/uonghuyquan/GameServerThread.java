@@ -196,6 +196,7 @@ public class GameServerThread extends Thread {
 			if(!playing.equals(name))continue;
 			System.out.println("turn:"+playing);
 			int i, err = 0;
+			int _location[] = new int[2];
 			for(i=0;i<2;i++){
 				System.out.println("----------------------join loop");
 				m = new GameMessage(GameMessage.TURN);
@@ -209,10 +210,10 @@ public class GameServerThread extends Thread {
 				io = new GameIO(socket);
 				m = io.read();
 				int location = m.getParamAsInt("Location");
+				_location[i] = location;
 				System.out.println("---------------------------------------------------location: "+location);
 				if(location < thisRoom.getSize() && location > -1 && thisRoom.Unused(location)){
 					code[i] = thisRoom.getCode(location);
-					thisRoom.used(location);
 					m =  new GameMessage(GameMessage.GO_MOVED);
 					m.addParam("Username",playing);
 					m.addParam("Location", location);
@@ -241,6 +242,8 @@ public class GameServerThread extends Thread {
 			// if true
 			if(code[0] == code[1] && err ==0){
 				System.out.println("hello");
+				thisRoom.used(_location[0]);
+				thisRoom.used(_location[1]);
 				thisRoom.gaintScores(thisRoom.getTurn());
 				m = new GameMessage(GameMessage.SCORED);
 				for(int j=0;j<thisRoom.conCnt;j++){
