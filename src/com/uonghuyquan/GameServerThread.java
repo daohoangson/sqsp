@@ -278,8 +278,7 @@ public class GameServerThread extends Thread {
 					server.getRoomMgr().removeRoom(thisRoom.getId());
 					Thread.sleep(10000);
 				}
-			}
-			thisRoom.upTurn();
+			}else thisRoom.upTurn();
 		}
 	}
 
