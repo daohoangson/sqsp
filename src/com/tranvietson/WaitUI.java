@@ -77,8 +77,11 @@ public class WaitUI extends JFrame implements ActionListener {
 		manager.onReadyChange(true);
 	}
 
-	/*
-	 * updateReady method, update users' status
+	/**
+	 * updateReady method: update users' status
+	 * 
+	 * @param username
+	 * @param ready
 	 */
 	@SuppressWarnings("null")
 	public void updateReady(String[] username, boolean[] ready) {
