@@ -210,9 +210,9 @@ public class GameServerThread extends Thread {
 				m = io.read();
 				int location = m.getParamAsInt("Location");
 				System.out.println("---------------------------------------------------location: "+location);
-				if(location < thisRoom.getSize() && location > -1 && thisRoom.Unused(i)){
+				if(location < thisRoom.getSize() && location > -1 && thisRoom.Unused(location)){
 					code[i] = thisRoom.getCode(location);
-					thisRoom.used(i);
+					thisRoom.used(location);
 					m =  new GameMessage(GameMessage.GO_MOVED);
 					m.addParam("Username",playing);
 					m.addParam("Location", location);
