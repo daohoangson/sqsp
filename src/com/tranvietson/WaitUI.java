@@ -22,7 +22,7 @@ public class WaitUI extends JFrame implements ActionListener {
 	private final JScrollPane scroll;
 	DefaultListModel model = new DefaultListModel();
 
-	private String[] status = null;
+	private String[] status = new String[0];
 
 	public WaitUI(UIManager manager, boolean host) {
 		super("Waiting Room");
@@ -85,13 +85,16 @@ public class WaitUI extends JFrame implements ActionListener {
 	 */
 	@SuppressWarnings("null")
 	public void updateReady(String[] username, boolean[] ready) {
-		String[] s = null;
+		String[] s = new String[username.length];
+		model.clear();
 		for (int i = 0; i < ready.length; i++) {
 			if (ready[i] == true) {
 				s[i] = "- " + username[i] + " (READY)";
-			} else
+			} else {
 				s[i] = "- " + username[i] + " (NOT READY)";
+			}
+			model.addElement(s[i]);
 		}
-		status = s;
+
 	}
 }

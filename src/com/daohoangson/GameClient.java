@@ -350,10 +350,7 @@ public class GameClient extends GameEventSource implements Runnable {
 				prepareToPlay();
 			}
 
-			boolean roomReady = getRoomReady(username);
-			if (roomReady != ready) {
-				setReady(roomReady);
-			}
+			fireGameEvent(GameEvent.ROOM_STATE);
 
 			GameIO.debug("Updated room info", 4);
 		} else {
@@ -488,6 +485,10 @@ public class GameClient extends GameEventSource implements Runnable {
 		} else {
 			return 0;
 		}
+	}
+
+	public int getRoomSize() {
+		return Integer.valueOf(getRoomInfo("Room-Size"));
 	}
 
 	public int getRoomStatus() {

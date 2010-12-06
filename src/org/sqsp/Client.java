@@ -2,16 +2,19 @@ package org.sqsp;
 
 import com.daohoangson.GameClient;
 import com.daohoangson.GameIO;
-import com.daohoangson.GameMessage;
 import com.daohoangson.GameParamList;
 import com.daohoangson.event.GameEvent;
 import com.daohoangson.event.GameEventListener;
 import com.tranvietson.LoginUI;
+import com.tranvietson.PlayUI;
 import com.tranvietson.UIManager;
+import com.tranvietson.WaitUI;
 
 public class Client implements GameEventListener, UIManager {
 	private GameClient gameClient;
 	private LoginUI loginUI = null;
+	private WaitUI waitUI = null;
+	private PlayUI playUI = null;
 
 	public Client(String host, int port) {
 		gameClient = new GameClient(host, port);
@@ -28,15 +31,15 @@ public class Client implements GameEventListener, UIManager {
 	}
 
 	public void doWait() {
-		if (gameClient.getRoomId() > 0
-				&& gameClient.getRoomStatus() == GameMessage.RS_WAITING) {
-			GameIO.debug("Client.doWait()");
-			gameClient.setReady(true);
-		}
+		GameIO.debug("Client.doWait()");
+		waitUI = new WaitUI(this, gameClient.isHost());
+		waitUI.setVisible(true);
 	}
 
 	public void doPlay() {
 		GameIO.debug("Client.doPlay()");
+		playUI = new PlayUI(this, gameClient.getRoomSize());
+		playUI.setVisible(true);
 	}
 
 	@Override
@@ -54,30 +57,55 @@ public class Client implements GameEventListener, UIManager {
 			break;
 		case GameEvent.JOINED_ROOM:
 		case GameEvent.WAITING:
+			if (playUI != null) {
+				playUI.setVisible(false);
+				playUI = null;
+			}
 			doWait();
 			break;
+		case GameEvent.ROOM_STATE:
+			if (waitUI != null) {
+				int count = gameClient.getRoomUsers();
+				String[] usernames = new String[count];
+				boolean[] readys = new boolean[count];
+				for (int i = 0; i < count; i++) {
+					usernames[i] = gameClient.getRoomUsername(i);
+					readys[i] = gameClient.getRoomReady(usernames[i]);
+				}
+				waitUI.updateReady(usernames, readys);
+			}
+			break;
 		case GameEvent.STARTED:
+			if (waitUI != null) {
+				waitUI.setVisible(false);
+				waitUI = null;
+			}
 			doPlay();
 			break;
 		case GameEvent.TURN:
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+			if (playUI != null) {
+				playUI.setTitle("GO!");
 			}
-			gameClient.go(gameClient.aiThink());
 			break;
 		case GameEvent.GO_MOVED:
 			String username = ge.gameMessage.getParam("Username");
 			int location = ge.gameMessage.getParamAsInt("Location");
 			int code = ge.gameMessage.getParamAsInt("Code");
-			System.out
-					.println(username + " opened " + location + " ~> " + code);
+			if (playUI != null) {
+				playUI.flipCard(location, code);
+				playUI.setTitle("");
+			}
 			break;
 		case GameEvent.GO_DONE:
+			if (playUI != null) {
+				playUI.flipCards();
+			}
 			break;
 		case GameEvent.SCORED:
+			if (playUI != null) {
+				int[] locations = gameClient.getOpenedLocations();
+				playUI.destroyCards(locations[0], locations[1]);
+			}
 			break;
 		case GameEvent.OWN_SCORED:
 			System.out.println("SCORED! "
@@ -91,8 +119,7 @@ public class Client implements GameEventListener, UIManager {
 
 	@Override
 	public void onFlip(int cardId) {
-		// TODO Auto-generated method stub
-
+		gameClient.go(cardId);
 	}
 
 	@Override
@@ -107,7 +134,7 @@ public class Client implements GameEventListener, UIManager {
 
 	@Override
 	public void onReadyChange(boolean ready) {
-		if (gameClient.getRoomId() > 0) {
+		if (waitUI != null && gameClient.getRoomId() > 0) {
 			// only set ready if we are in a room
 			gameClient.setReady(ready);
 		}
