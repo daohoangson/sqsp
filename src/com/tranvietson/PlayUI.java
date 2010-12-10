@@ -1,7 +1,6 @@
 package com.tranvietson;
 
 import java.awt.Dimension;
-import java.awt.Frame;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -32,7 +31,6 @@ public class PlayUI extends JFrame implements ActionListener {
 		}
 
 		pack();
-		setExtendedState(getExtendedState() | Frame.MAXIMIZED_BOTH);
 	}
 
 	@Override

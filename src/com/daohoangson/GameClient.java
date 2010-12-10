@@ -26,12 +26,11 @@ public class GameClient extends GameEventSource implements Runnable {
 	private boolean host = false;
 	private boolean ready = false;
 	private boolean turn = false;
-	private int[] openedLocations = null;
 	private GameParamList roomInfo = null;
 	private GameParamList scores = null;
+	private final int[] lastOpenedLocations = new int[10];
 
 	private int[] aiCodes = null;
-	private final int[] aiLastTwo = new int[2];
 	public final static int AI_UNKNOWN = -2;
 	public final static int AI_DONE = -1;
 
@@ -83,7 +82,7 @@ public class GameClient extends GameEventSource implements Runnable {
 						myState.addParam("Username", username);
 						myState.addParam("Ready", ready ? 1 : 0);
 						io.write(myState);
-						
+
 						if (roomId > 0) {
 							readRoomInfoMessage(m);
 						}
@@ -272,13 +271,6 @@ public class GameClient extends GameEventSource implements Runnable {
 	 */
 	private void turn() {
 		turn = true;
-
-		if (openedLocations == null || openedLocations[1] > -1) {
-			openedLocations = new int[2];
-			for (int i = 0; i < openedLocations.length; i++) {
-				openedLocations[i] = -1;
-			}
-		}
 	}
 
 	/**
@@ -296,13 +288,6 @@ public class GameClient extends GameEventSource implements Runnable {
 		go.addParam("Username", username);
 		go.addParam("Location", location);
 		write(go);
-
-		for (int i = 0; i < openedLocations.length; i++) {
-			if (openedLocations[i] == -1) {
-				openedLocations[i] = location;
-				break;
-			}
-		}
 	}
 
 	/**
@@ -311,13 +296,24 @@ public class GameClient extends GameEventSource implements Runnable {
 	 * @return array of 2 integers for locations
 	 */
 	public int[] getOpenedLocations() {
-		return openedLocations;
+		int[] opened = new int[2];
+
+		for (int i = 0; i < lastOpenedLocations.length; i++) {
+			opened[i] = lastOpenedLocations[lastOpenedLocations.length - 1 - i];
+			if (i == opened.length - 1) {
+				break;
+			}
+		}
+
+		return opened;
 	}
 
 	private void prepareToPlay() {
 		ready = false;
 		turn = false;
-		openedLocations = null;
+		for (int i = 0; i < lastOpenedLocations.length; i++) {
+			lastOpenedLocations[i] = -1;
+		}
 		scores = null;
 	}
 
@@ -343,10 +339,10 @@ public class GameClient extends GameEventSource implements Runnable {
 					if (statusNew == GameMessage.RS_PLAYING) {
 						fireGameEvent(GameEvent.STARTED);
 						aiStart();
+						prepareToPlay();
 					} else if (statusNew == GameMessage.RS_WAITING) {
 						fireGameEvent(GameEvent.WAITING);
 						aiStop();
-						prepareToPlay();
 					}
 				}
 			} else {
@@ -505,9 +501,6 @@ public class GameClient extends GameEventSource implements Runnable {
 			for (int i = 0; i < size; i++) {
 				aiCodes[i] = GameClient.AI_UNKNOWN;
 			}
-			for (int i = 0; i < aiLastTwo.length; i++) {
-				aiLastTwo[i] = -1;
-			}
 		}
 	}
 
@@ -526,11 +519,13 @@ public class GameClient extends GameEventSource implements Runnable {
 			if (location >= 0 && location < aiCodes.length && code >= 0) {
 				aiCodes[location] = code;
 			}
-			aiLastTwo[0] = aiLastTwo[1];
-			aiLastTwo[1] = location;
+			for (int i = 0; i < lastOpenedLocations.length - 1; i++) {
+				lastOpenedLocations[i] = lastOpenedLocations[i + 1];
+			}
+			lastOpenedLocations[lastOpenedLocations.length - 1] = location;
 		} else if (m.is(GameMessage.SCORED)) {
-			for (int i = 0; i < aiLastTwo.length; i++) {
-				int location = aiLastTwo[i];
+			for (int i = 0; i < lastOpenedLocations.length; i++) {
+				int location = lastOpenedLocations[i];
 				if (location >= 0 && location < aiCodes.length) {
 					aiCodes[location] = GameClient.AI_DONE;
 				}

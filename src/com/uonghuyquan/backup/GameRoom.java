@@ -22,6 +22,10 @@ public class GameRoom extends GameUserList implements Runnable {
 	private int lastUserId = 0;
 	private int scorePerMatchedPair = 1;
 
+	static int CFG_GAME_STATE_INTERVAL = 1500;
+	static int CFG_CARD_CLOSE_TIME = 2500;
+	static int CFG_GAME_END_INTERVAL = 2500;
+
 	public GameRoom(GameServer server, GameUser host, int size) {
 		id = ++GameRoom.count;
 		this.server = server;
@@ -127,7 +131,7 @@ public class GameRoom extends GameUserList implements Runnable {
 
 		// generate array of card codes
 		Random rand = new Random();
-		int cardTypes = Math.min(40, Math.max(5, size / 2));
+		int cardTypes = Math.min(40, size / 2);
 		cardCodesArray = new int[size];
 		for (int i = 0; i < size; i++) {
 			cardCodesArray[i] = -1;
@@ -152,6 +156,7 @@ public class GameRoom extends GameUserList implements Runnable {
 		usersArray = getUsersArray();
 
 		for (int i = 0; i < usersArray.length; i++) {
+			usersArray[i].setReady(false);
 			usersArray[i].resetScore();
 		}
 
@@ -230,7 +235,6 @@ public class GameRoom extends GameUserList implements Runnable {
 							// only broadcast if user opened a valid card
 							GameMessage goMoved = new GameMessage(
 									GameMessage.GO_MOVED);
-							buildRoomInfoMessage(goMoved);
 							goMoved.addParam("Username", user.getUsername());
 							goMoved.addParam("Location", location);
 							goMoved.addParam("Code", openedCodes[i]);
@@ -240,6 +244,14 @@ public class GameRoom extends GameUserList implements Runnable {
 				} else {
 					openedCodes[i] = -1;
 					break;
+				}
+			}
+
+			if (openedCodes[0] > -1 && openedCodes[0] > -1) {
+				try {
+					Thread.sleep(GameRoom.CFG_CARD_CLOSE_TIME);
+				} catch (InterruptedException e) {
+					// ignore
 				}
 			}
 
@@ -276,23 +288,19 @@ public class GameRoom extends GameUserList implements Runnable {
 		cardCodesArray = null;
 		usersArray = null;
 
-		// reset users' ready status
-		GameUser[] users = getUsersArray();
-		for (int i = 0; i < users.length; i++) {
-			users[i].setReady(false);
-		}
-
 		// update status
 		status = GameMessage.RS_WAITING;
 	}
 
 	public void run() {
+		boolean flagJustComeBack = false;
+
 		while (true) {
 			if (!active) {
 				return;
 			}
 			try {
-				Thread.sleep(2000);
+				Thread.sleep(GameRoom.CFG_GAME_STATE_INTERVAL);
 			} catch (InterruptedException e) {
 				GameIO.debug(e.toString());
 			}
@@ -303,8 +311,12 @@ public class GameRoom extends GameUserList implements Runnable {
 			if (status == GameMessage.RS_WAITING) {
 				GameIO.debug(this + " waiting for players");
 
-				if (getUsers() > 1 && isEveryoneReady()) {
-					prepareToPlay();
+				if (flagJustComeBack) {
+					flagJustComeBack = false;
+				} else {
+					if (getUsers() > 1 && isEveryoneReady()) {
+						prepareToPlay();
+					}
 				}
 
 				GameMessage m = new GameMessage(GameMessage.ROOM_STATE);
@@ -332,6 +344,12 @@ public class GameRoom extends GameUserList implements Runnable {
 					GameIO.debug(this + " ended a game");
 				}
 				cleanUp();
+				try {
+					Thread.sleep(GameRoom.CFG_GAME_END_INTERVAL);
+				} catch (InterruptedException e) {
+					GameIO.debug(e.toString());
+				}
+				flagJustComeBack = true;
 			}
 		}
 	}

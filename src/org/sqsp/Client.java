@@ -49,7 +49,7 @@ public class Client implements GameEventListener, UIManager {
 			// TODO: Implement the room selecting feature
 			int rooms = gameClient.rooms();
 			if (rooms == 0) {
-				gameClient.roomMake(20);
+				gameClient.roomMake(2);
 			} else {
 				GameParamList roomInfo = gameClient.roomInfo(0);
 				gameClient.roomJoin(roomInfo.getParamAsInt("RoomID"));
@@ -92,7 +92,7 @@ public class Client implements GameEventListener, UIManager {
 			int location = ge.gameMessage.getParamAsInt("Location");
 			int code = ge.gameMessage.getParamAsInt("Code");
 			if (playUI != null) {
-				playUI.flipCard(username,location, code);
+				playUI.flipCard(username, location, code);
 				playUI.setTitle("");
 			}
 			break;
