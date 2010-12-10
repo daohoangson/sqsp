@@ -92,7 +92,7 @@ public class Client implements GameEventListener, UIManager {
 			int location = ge.gameMessage.getParamAsInt("Location");
 			int code = ge.gameMessage.getParamAsInt("Code");
 			if (playUI != null) {
-				playUI.flipCard(location, code);
+				playUI.flipCard(username,location, code);
 				playUI.setTitle("");
 			}
 			break;

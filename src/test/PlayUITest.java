@@ -12,7 +12,6 @@ public class PlayUITest {
 			@Override
 			public void onFlip(int cardId) {
 				System.out.println(cardId);
-				PlayUITest.ui.flipCard(cardId, 10);
 			}
 
 			@Override
@@ -37,7 +36,7 @@ public class PlayUITest {
 		}
 		for (int i = 0; i < 25; i++) {
 			System.out.println(i);
-			PlayUITest.ui.flipCard(i, 1);
+			PlayUITest.ui.flipCard("Anon",i, 1);
 		}
 	}
 }

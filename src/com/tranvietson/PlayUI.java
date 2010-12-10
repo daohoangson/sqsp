@@ -13,7 +13,7 @@ public class PlayUI extends JFrame implements ActionListener {
 
 	private final UIManager manager;
 	private final int size;
-	private Card[] cards;
+	private final Card[] cards;
 
 	public PlayUI(UIManager manager, int size) {
 		this.manager = manager;
@@ -42,7 +42,7 @@ public class PlayUI extends JFrame implements ActionListener {
 		manager.onFlip(cardId);
 	}
 
-	public void flipCard(int cardId, int pictureId) {
+	public void flipCard(String username, int cardId, int pictureId) {
 		cards[cardId].open(pictureId);
 	}
 

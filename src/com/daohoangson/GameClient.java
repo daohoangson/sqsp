@@ -31,7 +31,7 @@ public class GameClient extends GameEventSource implements Runnable {
 	private GameParamList scores = null;
 
 	private int[] aiCodes = null;
-	private int[] aiLastTwo = new int[2];
+	private final int[] aiLastTwo = new int[2];
 	public final static int AI_UNKNOWN = -2;
 	public final static int AI_DONE = -1;
 
@@ -78,12 +78,15 @@ public class GameClient extends GameEventSource implements Runnable {
 				switch (m.getCode()) {
 				case GameMessage.ROOM_STATE:
 					// got a ROOM_STATE, auto announce client's state
-					if (m.getParamAsInt("RoomID") == roomId) {
+					if (roomId == 0 || m.getParamAsInt("RoomID") == roomId) {
 						GameMessage myState = new GameMessage(GameMessage.OK);
 						myState.addParam("Username", username);
 						myState.addParam("Ready", ready ? 1 : 0);
 						io.write(myState);
-						readRoomInfoMessage(m);
+						
+						if (roomId > 0) {
+							readRoomInfoMessage(m);
+						}
 					} else {
 						GameIO.debug("ROOM_STATE INVALID: "
 								+ m.getParamAsInt("RoomID"), 4);
