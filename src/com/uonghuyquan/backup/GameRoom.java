@@ -20,11 +20,14 @@ public class GameRoom extends GameUserList implements Runnable {
 	private int[] cardCodesArray = null;
 	private GameUser[] usersArray = null;
 	private int lastUserId = 0;
-	private int scorePerMatchedPair = 1;
+	private GameUser inTurnUser = null;
+	private int inTurnLocation = -1;
 
-	static int CFG_GAME_STATE_INTERVAL = 1500;
+	static int CFG_SCORE_PER_MATCHED = 1;
 	static int CFG_CARD_CLOSE_TIME = 2500;
 	static int CFG_GAME_END_INTERVAL = 2500;
+	static int CFG_TURN_INTERVAL = 15000;
+	static int CFG_TURN_INTERVAL_STEP = 1000;
 
 	public GameRoom(GameServer server, GameUser host, int size) {
 		id = ++GameRoom.count;
@@ -92,21 +95,36 @@ public class GameRoom extends GameUserList implements Runnable {
 		for (int i = 0; i < users.length; i++) {
 			try {
 				users[i].io.write(broadcastMessage);
-
-				if (broadcastMessage.is(GameMessage.ROOM_STATE)) {
-					GameMessage m = users[i].io.read();
-					if (m.is(GameMessage.OK)
-							&& m.getParam("Username").equals(
-									users[i].getUsername())) {
-						users[i].setReady(m.getParamAsInt("Ready") == 1);
-					} else {
-						users[i].leaveRoom();
-					}
-				}
 			} catch (IOException e) {
 				users[i].byebye();
 			}
 		}
+	}
+
+	public void broadcastState() {
+		GameMessage state = new GameMessage(GameMessage.ROOM_STATE);
+		buildRoomInfoMessage(state);
+		broadcast(state);
+	}
+
+	public void broadcastTurn(String username) {
+		GameMessage turn = new GameMessage(GameMessage.TURN);
+		turn.addParam("Turn", username);
+		broadcast(turn);
+	}
+
+	public void broadcastMoved(String username, int location, int code) {
+		GameMessage goMoved = new GameMessage(GameMessage.GO_MOVED);
+		goMoved.addParam("Username", username);
+		goMoved.addParam("Location", location);
+		goMoved.addParam("Code", code);
+		broadcast(goMoved);
+	}
+
+	public void broadcastGoDone(String username) {
+		GameMessage goDone = new GameMessage(GameMessage.GO_DONE);
+		goDone.addParam("Username", username);
+		broadcast(goDone);
 	}
 
 	public void broadcastScores() {
@@ -156,8 +174,7 @@ public class GameRoom extends GameUserList implements Runnable {
 		usersArray = getUsersArray();
 
 		for (int i = 0; i < usersArray.length; i++) {
-			usersArray[i].setReady(false);
-			usersArray[i].resetScore();
+			usersArray[i].prepareToPlay();
 		}
 
 		// clear last user played
@@ -207,81 +224,82 @@ public class GameRoom extends GameUserList implements Runnable {
 	}
 
 	private void playUser(GameUser user) {
-		try {
-			GameIO.debug(this + ": Starting turn for " + user.getUsername(), 2);
-			int[] openedLocations = new int[2];
-			int[] openedCodes = new int[2];
-			for (int i = 0; i < openedCodes.length; i++) {
-				GameMessage turn = new GameMessage(GameMessage.TURN);
-				turn.addParam("Turn", user.getUsername());
-				user.io.write(turn);
+		inTurnUser = user;
 
-				// GameMessage go = user.io.readWithTimeout(15000);
-				GameMessage go = user.io.read();
+		GameIO.debug(this + ": Starting turn for " + user.getUsername(), 2);
+		int[] openedLocations = new int[2];
+		int[] openedCodes = new int[2];
+		for (int i = 0; i < openedCodes.length; i++) {
+			inTurnLocation = -1;
+			broadcastTurn(user.getUsername());
+			// broadcasted, we now wait...
 
-				if (go != null) {
-					if (go.is(GameMessage.GO)) {
-						int location = go.getParamAsInt("Location");
-						openedLocations[i] = location;
-						if (location < cardCodesArray.length) {
-							openedCodes[i] = cardCodesArray[location];
-						} else {
-							openedCodes[i] = -1;
-						}
-						GameIO.debug(this + ": " + user.getUsername()
-								+ " opened " + openedLocations[i] + " ~> "
-								+ openedCodes[i], 2);
-						if (openedCodes[i] != -1) {
-							// only broadcast if user opened a valid card
-							GameMessage goMoved = new GameMessage(
-									GameMessage.GO_MOVED);
-							goMoved.addParam("Username", user.getUsername());
-							goMoved.addParam("Location", location);
-							goMoved.addParam("Code", openedCodes[i]);
-							broadcast(goMoved);
-						}
-					}
+			int timer = GameRoom.CFG_TURN_INTERVAL;
+			do {
+				try {
+					Thread.sleep(GameRoom.CFG_TURN_INTERVAL_STEP);
+				} catch (InterruptedException e) {
+					// ignore
+				}
+				timer -= GameRoom.CFG_TURN_INTERVAL_STEP;
+				GameIO.debug(this + ": Timer for " + user + " = " + timer, 5);
+			} while (timer > 0 && inTurnLocation == -1);
+
+			if (inTurnLocation != -1) {
+				// a GO has been received
+				openedLocations[i] = inTurnLocation;
+				if (inTurnLocation < cardCodesArray.length) {
+					openedCodes[i] = cardCodesArray[inTurnLocation];
 				} else {
 					openedCodes[i] = -1;
 					break;
 				}
+				GameIO.debug(this + ": " + user.getUsername() + " opened "
+						+ openedLocations[i] + " ~> " + openedCodes[i], 2);
+				// broadcast the opened card
+				broadcastMoved(user.getUsername(), inTurnLocation,
+						openedCodes[i]);
+			} else {
+				// nothing has been received
+				openedCodes[i] = -1;
+				break;
 			}
+		}
 
-			if (openedCodes[0] > -1 && openedCodes[0] > -1) {
-				try {
-					Thread.sleep(GameRoom.CFG_CARD_CLOSE_TIME);
-				} catch (InterruptedException e) {
-					// ignore
-				}
+		// cool down, let people see opened cards
+		if (openedCodes[0] > -1 && openedCodes[0] > -1) {
+			try {
+				Thread.sleep(GameRoom.CFG_CARD_CLOSE_TIME);
+			} catch (InterruptedException e) {
+				// ignore
 			}
+		}
 
-			GameMessage goDone = new GameMessage(GameMessage.GO_DONE);
-			goDone.addParam("Username", user.getUsername());
-			broadcast(goDone);
+		// broadcast GO_DONE
+		broadcastGoDone(user.getUsername());
 
-			if (openedCodes[0] > -1 && openedCodes[0] > -1) {
-				// valid codes
-				if (openedLocations[0] != openedLocations[1]) {
-					// valid locations
-					if (openedCodes[0] == openedCodes[1]) {
-						// scored!
-						user.setScore(user.getScore() + scorePerMatchedPair);
-						cardCodesArray[openedLocations[0]] = -1;
-						cardCodesArray[openedLocations[1]] = -1;
+		if (openedCodes[0] > -1 && openedCodes[0] > -1) {
+			// valid codes
+			if (openedLocations[0] != openedLocations[1]) {
+				// valid locations
+				if (openedCodes[0] == openedCodes[1]) {
+					// scored!
+					user.increaseScore(GameRoom.CFG_SCORE_PER_MATCHED);
+					// mark done for cards
+					cardCodesArray[openedLocations[0]] = -1;
+					cardCodesArray[openedLocations[1]] = -1;
 
-						GameIO.debug(user.getUsername() + " scored!", 3);
+					GameIO.debug(user.getUsername() + " scored!", 3);
 
-						if (!isFinished()) {
-							playUser(user); // continue playing
-						}
-					} else {
-						// hmm
+					if (!isFinished()) {
+						// let the current player continue
+						playUser(user);
 					}
 				}
 			}
-		} catch (IOException e) {
-			user.byebye();
 		}
+
+		inTurnUser = null;
 	}
 
 	private void cleanUp() {
@@ -292,40 +310,26 @@ public class GameRoom extends GameUserList implements Runnable {
 		status = GameMessage.RS_WAITING;
 	}
 
-	public void run() {
-		boolean flagJustComeBack = false;
+	public void onUserChanged(GameUser user) {
+		if (users.size() > 1 && isEveryoneReady()) {
+			prepareToPlay();
+		}
+		broadcastState();
+	}
 
+	public void onUserGo(GameUser user, int location) {
+		if (user == inTurnUser) {
+			inTurnLocation = location;
+		}
+	}
+
+	public void run() {
 		while (true) {
 			if (!active) {
 				return;
 			}
-			try {
-				Thread.sleep(GameRoom.CFG_GAME_STATE_INTERVAL);
-			} catch (InterruptedException e) {
-				GameIO.debug(e.toString());
-			}
-			if (users.size() == 0) {
-				continue;
-			}
 
-			if (status == GameMessage.RS_WAITING) {
-				GameIO.debug(this + " waiting for players");
-
-				if (flagJustComeBack) {
-					flagJustComeBack = false;
-				} else {
-					if (getUsers() > 1 && isEveryoneReady()) {
-						prepareToPlay();
-					}
-				}
-
-				GameMessage m = new GameMessage(GameMessage.ROOM_STATE);
-				buildRoomInfoMessage(m);
-				broadcast(m);
-			}
 			if (status == GameMessage.RS_PLAYING) {
-				GameIO.debug(this + " started playing");
-
 				while (!isFinished()) {
 					int userId = nextUserId();
 					if (userId > -1) {
@@ -349,7 +353,7 @@ public class GameRoom extends GameUserList implements Runnable {
 				} catch (InterruptedException e) {
 					GameIO.debug(e.toString());
 				}
-				flagJustComeBack = true;
+				broadcastState();
 			}
 		}
 	}

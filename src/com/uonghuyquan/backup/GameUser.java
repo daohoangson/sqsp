@@ -6,11 +6,10 @@ import com.daohoangson.GameException;
 import com.daohoangson.GameIO;
 import com.daohoangson.GameMessage;
 
-public class GameUser {
+public class GameUser implements Runnable {
 	public GameServer server;
 	public GameIO io;
 	public GameRoom room = null;
-	private boolean validated = false;
 	private String username = null;
 	private boolean ready = false;
 	private int score = 0;
@@ -20,30 +19,9 @@ public class GameUser {
 		this.server = server;
 		this.io = io;
 
-		GameIO.debug("GameUser created", 3);
-	}
+		new Thread(this).start();
 
-	public void start() {
-		try {
-			try {
-				if (!validated) {
-					if (io.read().is(GameMessage.HELLO)) {
-						io.writeOK();
-					}
-					GameIO.debug("Connection validated", 1);
-					validated = true;
-				}
-				login();
-				loop();
-			} catch (GameException ge) {
-				io.writeError(ge.getErrorCode());
-			}
-		} catch (Exception e) {
-			// TODO: make sure to clean up stuff here, this is the last barrier
-			// so.. don't mess up
-			GameIO.debug(e.toString());
-			byebye();
-		}
+		GameIO.debug("GameUser created", 3);
 	}
 
 	public void byebye() {
@@ -63,9 +41,8 @@ public class GameUser {
 	public void leaveRoom() {
 		if (room != null) {
 			room.removeUser(this);
-			if (active) {
-				new GameThread(this);
-			}
+			room.broadcastState();
+			room = null;
 		}
 	}
 
@@ -111,6 +88,11 @@ public class GameUser {
 		this.room = room;
 	}
 
+	public void prepareToPlay() {
+		resetScore();
+		ready = false;
+	}
+
 	private void loop() throws IOException, GameException {
 		while (true) {
 			GameIO.debug("Waiting in loop", 4);
@@ -118,6 +100,7 @@ public class GameUser {
 			GameMessage response = null;
 
 			switch (m.getCode()) {
+			/* PENDING */
 			case GameMessage.ROOMS:
 				response = new GameMessage(GameMessage.OK);
 				response.addParam("Rooms", server.getRooms());
@@ -132,7 +115,8 @@ public class GameUser {
 				room.buildRoomInfoMessage(response);
 				io.write(response);
 
-				return;
+				this.room.broadcastState();
+				break;
 			case GameMessage.ROOM_INFO:
 			case GameMessage.ROOM_JOIN:
 				GameRoom roomInfo;
@@ -151,24 +135,45 @@ public class GameUser {
 					response = new GameMessage(GameMessage.OK);
 					roomInfo.buildRoomInfoMessage(response);
 					io.write(response);
+
+					if (this.room != null) {
+						this.room.broadcastState();
+					}
 				} else {
 					io.writeError(GameMessage.E_ROOM_NOT_FOUND);
 				}
-
-				if (m.getCode() == GameMessage.ROOM_JOIN) {
-					return;
-				}
+				break;
+			/* WAITING */
+			case GameMessage.READY:
+				ready = true;
+				roomNotify();
+				break;
+			case GameMessage.NOT_READY:
+				ready = false;
+				roomNotify();
+				break;
+			/* PLAYING */
+			case GameMessage.GO:
+				roomGo(m.getParamAsInt("Location"));
 				break;
 			}
 		}
 	}
 
-	public String getUsername() {
-		return username;
+	private void roomNotify() {
+		if (room != null) {
+			room.onUserChanged(this);
+		}
 	}
 
-	public void setReady(boolean ready) {
-		this.ready = ready;
+	private void roomGo(int location) {
+		if (room != null) {
+			room.onUserGo(this, location);
+		}
+	}
+
+	public String getUsername() {
+		return username;
 	}
 
 	public boolean isReady() {
@@ -180,6 +185,10 @@ public class GameUser {
 			this.score = score;
 			room.broadcastScores();
 		}
+	}
+
+	public void increaseScore(int delta) {
+		setScore(score + delta);
 	}
 
 	public void resetScore() {
@@ -202,5 +211,29 @@ public class GameUser {
 	public String toString() {
 		return "[USER:" + (username == null ? "<not-logged-in-yet>" : username)
 				+ "]";
+	}
+
+	@Override
+	public void run() {
+		try {
+			try {
+				if (io.read().is(GameMessage.HELLO)) {
+					io.writeOK();
+				}
+				GameIO.debug("Connection validated", 1);
+				login();
+				loop();
+			} catch (GameException ge) {
+				io.writeError(ge.getErrorCode());
+			}
+		} catch (Exception e) {
+			// TODO: make sure to clean up stuff here, this is the last barrier
+			// so... please don't mess up
+			if (e instanceof NullPointerException) {
+				e.printStackTrace();
+			}
+			GameIO.debug(e.toString());
+			byebye();
+		}
 	}
 }

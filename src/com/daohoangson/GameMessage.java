@@ -32,6 +32,8 @@ public class GameMessage extends GameParamList {
 	public final static int ROOM_JOIN = 6;
 	public final static int ROOMS = 8;
 	public final static int ROOM_STATE = 9;
+	public final static int READY = 10;
+	public final static int NOT_READY = 11;
 
 	public final static int TURN = 20;
 	public final static int GO = 21;
@@ -158,6 +160,12 @@ public class GameMessage extends GameParamList {
 		if (code.equals("ROOM_STATE")) {
 			return GameMessage.ROOM_STATE;
 		}
+		if (code.equals("READY")) {
+			return GameMessage.READY;
+		}
+		if (code.equals("NOT_READDY")) {
+			return GameMessage.NOT_READY;
+		}
 
 		if (code.equals("TURN")) {
 			return GameMessage.TURN;
@@ -221,6 +229,10 @@ public class GameMessage extends GameParamList {
 			return "ROOMS";
 		case ROOM_STATE:
 			return "ROOM_STATE";
+		case READY:
+			return "READY";
+		case NOT_READY:
+			return "NOT_READY";
 
 		case TURN:
 			return "TURN";

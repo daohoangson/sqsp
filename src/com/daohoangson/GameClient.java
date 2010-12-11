@@ -62,7 +62,7 @@ public class GameClient extends GameEventSource implements Runnable {
 	}
 
 	/**
-	 * Runs indepedently and read messages from the socket. This will be ran as
+	 * Runs independently and read messages from the socket. This will be ran as
 	 * a new thread via constructor
 	 */
 	public synchronized void run() {
@@ -78,11 +78,6 @@ public class GameClient extends GameEventSource implements Runnable {
 				case GameMessage.ROOM_STATE:
 					// got a ROOM_STATE, auto announce client's state
 					if (roomId == 0 || m.getParamAsInt("RoomID") == roomId) {
-						GameMessage myState = new GameMessage(GameMessage.OK);
-						myState.addParam("Username", username);
-						myState.addParam("Ready", ready ? 1 : 0);
-						io.write(myState);
-
 						if (roomId > 0) {
 							readRoomInfoMessage(m);
 						}
@@ -94,8 +89,7 @@ public class GameClient extends GameEventSource implements Runnable {
 					continue;
 				case GameMessage.TURN:
 					// got a TURN, prepare to GO
-					String turnUsername = m.getParam("Turn");
-					if (turnUsername.equals(username)) {
+					if (m.getParam("Turn").equals(username)) {
 						turn();
 						fireGameEvent(GameEvent.TURN);
 					}
@@ -264,6 +258,19 @@ public class GameClient extends GameEventSource implements Runnable {
 		}
 
 		return null;
+	}
+
+	public void setReady(boolean ready) {
+		this.ready = ready;
+
+		GameMessage m;
+		if (ready) {
+			m = new GameMessage(GameMessage.READY);
+		} else {
+			m = new GameMessage(GameMessage.NOT_READY);
+		}
+		m.addParam("Username", username);
+		write(m);
 	}
 
 	/**
@@ -442,10 +449,6 @@ public class GameClient extends GameEventSource implements Runnable {
 
 	public boolean isHost() {
 		return host;
-	}
-
-	public void setReady(boolean ready) {
-		this.ready = ready;
 	}
 
 	public boolean isReady() {

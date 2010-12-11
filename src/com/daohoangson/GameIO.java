@@ -179,6 +179,11 @@ public class GameIO {
 
 	public void disable() {
 		active = false;
+		try {
+			socket.close();
+		} catch (IOException e) {
+			// ignore
+		}
 	}
 
 	/**
