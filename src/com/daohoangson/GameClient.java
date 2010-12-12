@@ -71,9 +71,6 @@ public class GameClient extends GameEventSource implements Runnable {
 				GameIO.debug("Waiting in loop", 5);
 				GameMessage m = io.read();
 
-				// just to make sure turn is off. Dirty trick
-				turn = false;
-
 				switch (m.getCode()) {
 				case GameMessage.ROOM_STATE:
 					// got a ROOM_STATE, auto announce client's state
@@ -90,23 +87,27 @@ public class GameClient extends GameEventSource implements Runnable {
 				case GameMessage.TURN:
 					// got a TURN, prepare to GO
 					if (m.getParam("Turn").equals(username)) {
-						turn();
+						turnStart();
 					}
 					fireGameEvent(GameEvent.TURN, m);
 					continue;
 				case GameMessage.GO_MOVED:
+					turnStop();
 					aiUpdate(m);
 					fireGameEvent(GameEvent.GO_MOVED, m);
 					continue;
 				case GameMessage.GO_DONE:
+					turnStop();
 					fireGameEvent(GameEvent.GO_DONE, m);
 					continue;
 				case GameMessage.SCORED:
+					turnStop();
 					aiUpdate(m);
 					readScoreMessage(m);
 					fireGameEvent(GameEvent.SCORED, m);
 					continue;
 				case GameMessage.WON:
+					turnStop();
 					readScoreMessage(m);
 					fireGameEvent(GameEvent.WON, m);
 					continue;
@@ -279,8 +280,12 @@ public class GameClient extends GameEventSource implements Runnable {
 	/**
 	 * Prepares for client's turn
 	 */
-	private void turn() {
+	private void turnStart() {
 		turn = true;
+	}
+
+	private void turnStop() {
+		turn = false;
 	}
 
 	/**

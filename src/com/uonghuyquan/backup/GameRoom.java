@@ -62,7 +62,9 @@ public class GameRoom extends GameUserList implements Runnable {
 	public void buildRoomInfoMessage(GameMessage m) {
 		m.addParam("RoomID", getId());
 		m.addParam("Room-Size", getSize());
-		m.addParam("Host", getHost().getUsername());
+		if (host != null) {
+			m.addParam("Host", host.getUsername());
+		}
 		m.addParam("Users", getUsers());
 		GameUser[] users = getUsersArray();
 		for (int i = 0; i < users.length; i++) {
