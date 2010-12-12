@@ -29,6 +29,24 @@ public class LoginUITest {
 
 			}
 
+			@Override
+			public String getUsername() {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public boolean isReady() {
+				// TODO Auto-generated method stub
+				return false;
+			}
+
+			@Override
+			public void onChat(String message) {
+				// TODO Auto-generated method stub
+
+			}
+
 		});
 		ui.setVisible(true);
 	}

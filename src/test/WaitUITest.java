@@ -29,10 +29,28 @@ public class WaitUITest {
 
 			}
 
-		}, true);
+			@Override
+			public String getUsername() {
+				// TODO Auto-generated method stub
+				return "Blah";
+			}
+
+			@Override
+			public boolean isReady() {
+				// TODO Auto-generated method stub
+				return false;
+			}
+
+			@Override
+			public void onChat(String message) {
+				// TODO Auto-generated method stub
+
+			}
+
+		});
 		WaitUITest.ui.setVisible(true);
 		String[] usernames = { "User1", "User2" };
-		boolean[] readys = { true, true };
+		boolean[] readys = { true, false };
 		WaitUITest.ui.updateReady(usernames, readys);
 	}
 }

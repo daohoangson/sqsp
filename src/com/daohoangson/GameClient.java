@@ -91,8 +91,8 @@ public class GameClient extends GameEventSource implements Runnable {
 					// got a TURN, prepare to GO
 					if (m.getParam("Turn").equals(username)) {
 						turn();
-						fireGameEvent(GameEvent.TURN);
 					}
+					fireGameEvent(GameEvent.TURN, m);
 					continue;
 				case GameMessage.GO_MOVED:
 					aiUpdate(m);
@@ -109,6 +109,9 @@ public class GameClient extends GameEventSource implements Runnable {
 				case GameMessage.WON:
 					readScoreMessage(m);
 					fireGameEvent(GameEvent.WON, m);
+					continue;
+				case GameMessage.CHATTED:
+					fireGameEvent(GameEvent.CHATTED, m);
 					continue;
 				}
 			} catch (IOException e) {
@@ -297,6 +300,13 @@ public class GameClient extends GameEventSource implements Runnable {
 		write(go);
 	}
 
+	public void chat(String message) {
+		GameMessage chat = new GameMessage(GameMessage.CHAT);
+		chat.addParam("Username", username);
+		chat.addParam("Content", message);
+		write(chat);
+	}
+
 	/**
 	 * Gets the last 2 selected (and opened) locations
 	 * 
@@ -472,6 +482,10 @@ public class GameClient extends GameEventSource implements Runnable {
 	}
 
 	public boolean getRoomReady(String username) {
+		if (roomInfo == null) {
+			return false;
+		}
+
 		int userId = findUserId(roomInfo, username);
 		if (userId > -1) {
 			return Integer.valueOf(getRoomInfo("Ready" + userId)) == 1;
@@ -481,6 +495,10 @@ public class GameClient extends GameEventSource implements Runnable {
 	}
 
 	public int getRoomScore(String username) {
+		if (scores == null) {
+			return 0;
+		}
+
 		int userId = findUserId(scores, username);
 		if (userId > -1) {
 			return scores.getParamAsInt("Score" + userId);

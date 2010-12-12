@@ -7,6 +7,7 @@ import com.daohoangson.event.GameEvent;
 import com.daohoangson.event.GameEventListener;
 import com.tranvietson.LoginUI;
 import com.tranvietson.PlayUI;
+import com.tranvietson.RootUI;
 import com.tranvietson.UIManager;
 import com.tranvietson.WaitUI;
 
@@ -19,6 +20,8 @@ public class Client implements GameEventListener, UIManager {
 	public Client(String host, int port) {
 		gameClient = new GameClient(host, port);
 		gameClient.addGameEventListener(this);
+
+		doLogin();
 	}
 
 	public void doLogin() {
@@ -32,7 +35,7 @@ public class Client implements GameEventListener, UIManager {
 
 	public void doWait() {
 		GameIO.debug("Client.doWait()");
-		waitUI = new WaitUI(this, gameClient.isHost());
+		waitUI = new WaitUI(this);
 		waitUI.setVisible(true);
 	}
 
@@ -40,6 +43,7 @@ public class Client implements GameEventListener, UIManager {
 		GameIO.debug("Client.doPlay()");
 		playUI = new PlayUI(this, gameClient.getRoomSize());
 		playUI.setVisible(true);
+		updateScores();
 	}
 
 	@Override
@@ -49,7 +53,7 @@ public class Client implements GameEventListener, UIManager {
 			// TODO: Implement the room selecting feature
 			int rooms = gameClient.rooms();
 			if (rooms == 0) {
-				gameClient.roomMake(2);
+				gameClient.roomMake(400);
 			} else {
 				GameParamList roomInfo = gameClient.roomInfo(0);
 				gameClient.roomJoin(roomInfo.getParamAsInt("RoomID"));
@@ -84,7 +88,7 @@ public class Client implements GameEventListener, UIManager {
 			break;
 		case GameEvent.TURN:
 			if (playUI != null) {
-				playUI.setTitle("GO!");
+				playUI.updateTurn(ge.gameMessage.getParam("Turn"));
 			}
 			break;
 		case GameEvent.GO_MOVED:
@@ -105,6 +109,8 @@ public class Client implements GameEventListener, UIManager {
 			if (playUI != null) {
 				int[] locations = gameClient.getOpenedLocations();
 				playUI.destroyCards(locations[0], locations[1]);
+
+				updateScores();
 			}
 			break;
 		case GameEvent.OWN_SCORED:
@@ -112,8 +118,17 @@ public class Client implements GameEventListener, UIManager {
 					+ gameClient.getRoomScore(gameClient.getUsername()));
 			break;
 		case GameEvent.WON:
-			System.out.println("GAME ENDED");
+			RootUI.info("Game ended. Winner: "
+					+ ge.gameMessage.getParam("Username"));
 			break;
+		case GameEvent.CHATTED:
+			if (playUI != null) {
+				playUI.displayChat(ge.gameMessage.getParam("Username"),
+						ge.gameMessage.getParam("Content"));
+			}
+		case GameEvent.IOException:
+			RootUI.error("IOException occured. Bye bye");
+			System.exit(1);
 		}
 	}
 
@@ -133,6 +148,11 @@ public class Client implements GameEventListener, UIManager {
 	}
 
 	@Override
+	public String getUsername() {
+		return gameClient.getUsername();
+	}
+
+	@Override
 	public void onReadyChange(boolean ready) {
 		if (waitUI != null && gameClient.getRoomId() > 0) {
 			// only set ready if we are in a room
@@ -140,7 +160,30 @@ public class Client implements GameEventListener, UIManager {
 		}
 	}
 
+	@Override
+	public void onChat(String message) {
+		gameClient.chat(message);
+	}
+
+	public boolean isReady() {
+		return gameClient.isReady();
+	}
+
+	private void updateScores() {
+		if (playUI != null) {
+			int count = gameClient.getRoomUsers();
+			String[] usernames = new String[count];
+			int[] scores = new int[count];
+			for (int i = 0; i < count; i++) {
+				usernames[i] = gameClient.getRoomUsername(i);
+				scores[i] = gameClient.getRoomScore(usernames[i]);
+			}
+			playUI.updateScores(usernames, scores);
+		}
+	}
+
 	public static void main(String[] args) {
+		@SuppressWarnings("unused")
 		Client client;
 		if (args.length == 0) {
 			client = new Client("localhost", GameIO.DEFAULT_PORT);
@@ -149,6 +192,5 @@ public class Client implements GameEventListener, UIManager {
 		} else {
 			client = new Client(args[1], Integer.valueOf(args[1]));
 		}
-		client.doLogin();
 	}
 }

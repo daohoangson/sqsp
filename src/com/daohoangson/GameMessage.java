@@ -163,7 +163,7 @@ public class GameMessage extends GameParamList {
 		if (code.equals("READY")) {
 			return GameMessage.READY;
 		}
-		if (code.equals("NOT_READDY")) {
+		if (code.equals("NOT_READY")) {
 			return GameMessage.NOT_READY;
 		}
 

@@ -1,310 +1,110 @@
 package com.tranvietson;
 
+import java.awt.BorderLayout;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.GridLayout;
-import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
 
-import javax.imageio.ImageIO;
+import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
+import javax.swing.JButton;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.WindowConstants;
 
-/**
- * 
- * @author Tran Viet Son
- */
+public class PlayUI extends RootUI implements ActionListener {
+	private static final long serialVersionUID = 6326821831738404168L;
+	private UIManager manager;
+	private int size;
 
-public class PlayUI extends javax.swing.JFrame implements ActionListener {
-
-	private static final long serialVersionUID = 1L;
-
-	private final UIManager manager;
-	private final int size;
-	private final Card[] cards;
-
-	private final javax.swing.JPanel gamePn;
-	private final javax.swing.JPanel menuPn;
-	private final javax.swing.JButton btnSkip;
-	private final javax.swing.JLabel lbl1;
-	private final javax.swing.JLabel lbl2;
-	private final javax.swing.JScrollPane scrollPn1;
-	private final javax.swing.JScrollPane scrollPn2;
-	private final javax.swing.JTextArea chatBox;
-	private final javax.swing.JList gameTurn;
-	private final javax.swing.JTextField txt;
-	private final javax.swing.JButton btnSend;
-	DefaultListModel model = new DefaultListModel();
+	private JList lPlayers;
+	private JTextArea txtChat;
+	private JTextField txtMessage;
+	private JButton btnSend;
+	private DefaultListModel players = new DefaultListModel();
+	private PlayUI_Card[] cards;
 
 	public PlayUI(UIManager manager, int size) {
 		this.manager = manager;
 		this.size = size;
 
-		gamePn = new javax.swing.JPanel();
-		menuPn = new javax.swing.JPanel();
-		scrollPn1 = new javax.swing.JScrollPane();
-		scrollPn2 = new javax.swing.JScrollPane();
-		chatBox = new javax.swing.JTextArea();
-		btnSend = new javax.swing.JButton();
-		btnSkip = new javax.swing.JButton();
-		txt = new javax.swing.JTextField();
-		lbl1 = new javax.swing.JLabel();
-		lbl2 = new javax.swing.JLabel();
-		gameTurn = new javax.swing.JList(model);
+		initComponents();
+	}
 
-		setDefaultLookAndFeelDecorated(true);
-		setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-		setFocusableWindowState(true);
-		setTitle("Game Play");
-		setMinimumSize(new java.awt.Dimension(980, 680));
+	private void initComponents() {
+		JPanel pnLeft = new JPanel();
+		JPanel pnRight = new JPanel();
+		JPanel pnPlayers = new JPanel();
+		JPanel pnChat = new JPanel();
+		lPlayers = new JList(players);
+		lPlayers.setCellRenderer(new PlayUI_PlayerRenderer());
+		JScrollPane spnPlayers = new JScrollPane(lPlayers);
+		txtChat = new JTextArea();
+		txtChat.setEditable(false);
+		txtChat.setPreferredSize(new Dimension(250, 250));
+		JScrollPane spnChat = new JScrollPane(txtChat);
+		btnSend = new JButton("Send");
+		btnSend.addActionListener(this);
+		txtMessage = new JTextField();
+		txtMessage.addActionListener(this);
 
-		Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
-		int w = this.getSize().width;
-		int h = this.getSize().height;
-		int x = (d.width - w) / 2;
-		int y = (d.height - h) / 2;
-		this.setLocation(x, y);
-
-		BufferedImage icon = null;
-		try {
-			File imageFile = new File("images\\card.jpg");
-			icon = ImageIO.read(imageFile);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
-		setIconImage(icon);
-
-		gamePn.setBorder(javax.swing.BorderFactory
-				.createTitledBorder("Game Play"));
-		gamePn.setMaximumSize(new java.awt.Dimension(640, 640));
-		gamePn.setMinimumSize(new java.awt.Dimension(640, 640));
-
-		javax.swing.GroupLayout gamePnLayout = new javax.swing.GroupLayout(
-				gamePn);
-		gamePn.setLayout(gamePnLayout);
-		gamePnLayout.setHorizontalGroup(gamePnLayout.createParallelGroup(
-				javax.swing.GroupLayout.Alignment.LEADING).addGap(0, 555,
-				Short.MAX_VALUE));
-		gamePnLayout.setVerticalGroup(gamePnLayout.createParallelGroup(
-				javax.swing.GroupLayout.Alignment.LEADING).addGap(0, 575,
-				Short.MAX_VALUE));
-
-		menuPn.setBorder(javax.swing.BorderFactory
-				.createTitledBorder("Game Board"));
-
-		chatBox.setColumns(10);
-		chatBox.setEditable(false);
-		chatBox.setRows(5);
-		scrollPn1.setViewportView(chatBox);
-
-		btnSend.setText("Send");
-		btnSend.setMaximumSize(new java.awt.Dimension(63, 23));
-		btnSend.setMinimumSize(new java.awt.Dimension(63, 23));
-
-		lbl2.setText("Chat Box");
-
-		scrollPn2.getViewport().add(gameTurn);
-
-		btnSkip.setText("Skip Your Turn");
-
-		javax.swing.GroupLayout menuPnLayout = new javax.swing.GroupLayout(
-				menuPn);
-		menuPn.setLayout(menuPnLayout);
-		menuPnLayout
-				.setHorizontalGroup(menuPnLayout
-						.createParallelGroup(
-								javax.swing.GroupLayout.Alignment.LEADING)
-						.addGroup(
-								menuPnLayout
-										.createSequentialGroup()
-										.addContainerGap()
-										.addGroup(
-												menuPnLayout
-														.createParallelGroup(
-																javax.swing.GroupLayout.Alignment.LEADING)
-														.addGroup(
-																menuPnLayout
-																		.createSequentialGroup()
-																		.addComponent(
-																				lbl2)
-																		.addContainerGap(
-																				259,
-																				Short.MAX_VALUE))
-														.addGroup(
-																menuPnLayout
-																		.createSequentialGroup()
-																		.addGroup(
-																				menuPnLayout
-																						.createParallelGroup(
-																								javax.swing.GroupLayout.Alignment.TRAILING,
-																								false)
-																						.addComponent(
-																								btnSend,
-																								javax.swing.GroupLayout.Alignment.LEADING,
-																								javax.swing.GroupLayout.DEFAULT_SIZE,
-																								javax.swing.GroupLayout.DEFAULT_SIZE,
-																								Short.MAX_VALUE)
-																						.addComponent(
-																								txt,
-																								javax.swing.GroupLayout.Alignment.LEADING)
-																						.addComponent(
-																								scrollPn1,
-																								javax.swing.GroupLayout.Alignment.LEADING)
-																						.addComponent(
-																								btnSkip,
-																								javax.swing.GroupLayout.Alignment.LEADING,
-																								javax.swing.GroupLayout.DEFAULT_SIZE,
-																								javax.swing.GroupLayout.DEFAULT_SIZE,
-																								Short.MAX_VALUE)
-																						.addGroup(
-																								javax.swing.GroupLayout.Alignment.LEADING,
-																								menuPnLayout
-																										.createSequentialGroup()
-																										.addComponent(
-																												lbl1)
-																										.addGroup(
-																												menuPnLayout
-																														.createParallelGroup(
-																																javax.swing.GroupLayout.Alignment.LEADING)
-																														// .addComponent(
-																														// jLabel1)
-																														.addComponent(
-																																scrollPn2,
-																																javax.swing.GroupLayout.PREFERRED_SIZE,
-																																294,
-																																javax.swing.GroupLayout.PREFERRED_SIZE))))
-																		.addContainerGap(
-																				18,
-																				Short.MAX_VALUE)))));
-		menuPnLayout
-				.setVerticalGroup(menuPnLayout
-						.createParallelGroup(
-								javax.swing.GroupLayout.Alignment.LEADING)
-						.addGroup(
-								menuPnLayout
-										.createSequentialGroup()
-										// .addComponent(jLabel1)
-										.addGroup(
-												menuPnLayout
-														.createParallelGroup(
-																javax.swing.GroupLayout.Alignment.LEADING)
-														.addGroup(
-																menuPnLayout
-																		.createSequentialGroup()
-																		.addGap(27,
-																				27,
-																				27)
-																		.addComponent(
-																				lbl1))
-														.addGroup(
-																menuPnLayout
-																		.createSequentialGroup()
-																		.addPreferredGap(
-																				javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-																		.addComponent(
-																				scrollPn2,
-																				javax.swing.GroupLayout.DEFAULT_SIZE,
-																				175,
-																				Short.MAX_VALUE)))
-										.addGap(18, 18, 18)
-										.addComponent(btnSkip)
-										.addGap(11, 11, 11)
-										.addComponent(
-												lbl2,
-												javax.swing.GroupLayout.PREFERRED_SIZE,
-												28,
-												javax.swing.GroupLayout.PREFERRED_SIZE)
-										.addPreferredGap(
-												javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-										.addComponent(
-												scrollPn1,
-												javax.swing.GroupLayout.PREFERRED_SIZE,
-												204,
-												javax.swing.GroupLayout.PREFERRED_SIZE)
-										.addGap(18, 18, 18)
-										.addComponent(
-												txt,
-												javax.swing.GroupLayout.PREFERRED_SIZE,
-												javax.swing.GroupLayout.DEFAULT_SIZE,
-												javax.swing.GroupLayout.PREFERRED_SIZE)
-										.addGap(18, 18, 18)
-										.addComponent(
-												btnSend,
-												javax.swing.GroupLayout.PREFERRED_SIZE,
-												javax.swing.GroupLayout.DEFAULT_SIZE,
-												javax.swing.GroupLayout.PREFERRED_SIZE)
-										.addContainerGap()));
-
-		javax.swing.GroupLayout layout = new javax.swing.GroupLayout(
-				getContentPane());
-		getContentPane().setLayout(layout);
-		layout.setHorizontalGroup(layout
-				.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-				.addGroup(
-						javax.swing.GroupLayout.Alignment.TRAILING,
-						layout.createSequentialGroup()
-								.addContainerGap()
-								.addComponent(gamePn,
-										javax.swing.GroupLayout.PREFERRED_SIZE,
-										567, Short.MAX_VALUE)
-								.addPreferredGap(
-										javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-								.addComponent(menuPn,
-										javax.swing.GroupLayout.PREFERRED_SIZE,
-										javax.swing.GroupLayout.DEFAULT_SIZE,
-										javax.swing.GroupLayout.PREFERRED_SIZE)
-								.addGap(24, 24, 24)));
-		layout.setVerticalGroup(layout
-				.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-				.addGroup(
-						layout.createSequentialGroup()
-								.addContainerGap()
-								.addGroup(
-										layout.createParallelGroup(
-												javax.swing.GroupLayout.Alignment.TRAILING,
-												false)
-												.addComponent(
-														gamePn,
-														javax.swing.GroupLayout.Alignment.LEADING,
-														0, 602, Short.MAX_VALUE)
-												.addComponent(
-														menuPn,
-														javax.swing.GroupLayout.Alignment.LEADING,
-														javax.swing.GroupLayout.DEFAULT_SIZE,
-														javax.swing.GroupLayout.DEFAULT_SIZE,
-														Short.MAX_VALUE))
-								.addContainerGap(
-										javax.swing.GroupLayout.DEFAULT_SIZE,
-										Short.MAX_VALUE)));
-
-		pack();
-
-		/**
-		 * Draw cards in playboard
-		 */
-		cards = new Card[size];
-		int widthSize = (int) (Math.ceil(Math.sqrt(size)));
-		gamePn.setLayout(new GridLayout(widthSize, 0, 1, 1));
+		int sizeSqrt = (int) Math.ceil(Math.sqrt(size));
+		pnLeft.setLayout(new GridLayout(sizeSqrt, sizeSqrt));
+		cards = new PlayUI_Card[size];
 		for (int i = 0; i < size; i++) {
-			Card card = new Card(i);
-			card.setMaximumSize(new Dimension(32, 32));
-			card.setMinimumSize(new Dimension(32, 32));
-			gamePn.add(card);
+			PlayUI_Card card = new PlayUI_Card(i);
+			card.addActionListener(this);
+			pnLeft.add(card);
 
 			cards[i] = card;
-
-			card.addActionListener(this);
 		}
+		pnLeft.setBorder(BorderFactory.createTitledBorder("Play"));
+
+		pnPlayers.setLayout(new BorderLayout(10, 10));
+		pnPlayers.add(spnPlayers, BorderLayout.CENTER);
+		pnPlayers.setBorder(BorderFactory.createTitledBorder("Players"));
+
+		pnChat.setLayout(new BorderLayout(10, 10));
+		pnChat.add(spnChat, BorderLayout.CENTER);
+		JPanel pnChatBottom = new JPanel(new BorderLayout(5, 5));
+		pnChatBottom.add(txtMessage, BorderLayout.CENTER);
+		pnChatBottom.add(btnSend, BorderLayout.LINE_END);
+		pnChat.add(pnChatBottom, BorderLayout.PAGE_END);
+		pnChat.setBorder(BorderFactory.createTitledBorder("Chat"));
+
+		pnRight.setLayout(new GridLayout(2, 1));
+		pnRight.add(pnPlayers);
+		pnRight.add(pnChat);
+
+		Container pane = getContentPane();
+		pane.setLayout(new BorderLayout(10, 10));
+		pane.add(pnLeft, BorderLayout.CENTER);
+		pane.add(pnRight, BorderLayout.LINE_END);
+
+		setTitle("Play");
+		setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+		pack();
+		setLocationRelativeTo(null);
 	}
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		Card card = (Card) e.getSource();
-		int cardId = card.getCardId();
-		manager.onFlip(cardId);
+		Object o = e.getSource();
+
+		if (o instanceof PlayUI_Card) {
+			PlayUI_Card card = (PlayUI_Card) o;
+			int cardId = card.getCardId();
+			manager.onFlip(cardId);
+		} else if (o == txtMessage || o == btnSend) {
+			String message = txtMessage.getText();
+			txtMessage.setText("");
+			manager.onChat(message);
+		}
 	}
 
 	public void flipCard(String username, int cardId, int pictureId) {
@@ -318,26 +118,34 @@ public class PlayUI extends javax.swing.JFrame implements ActionListener {
 	}
 
 	public void destroyCards(int cardId1, int cardId2) {
-		cards[cardId1].setEnabled(false);
-		cards[cardId2].setEnabled(false);
+		cards[cardId1].destroy();
+		cards[cardId2].destroy();
 	}
 
-	/**
-	 * updateGameTurn method: update players' turn, show in Game Board
-	 * 
-	 * @param username
-	 * @param go
-	 */
-	public void updateGameTurn(String[] username, boolean[] go) {
-		String[] s = new String[username.length];
-		model.clear();
-		for (int i = 0; i < go.length; i++) {
-			if (go[i] == true) {
-				s[i] = "  --    " + username[i] + "               is flipping";
-			} else {
-				s[i] = "  --    " + username[i];
-			}
-			model.addElement(s[i]);
+	public void updateScores(String[] usernames, int[] scores) {
+		players.clear();
+		for (int i = 0; i < usernames.length; i++) {
+			players.addElement(new PlayUI_Player(usernames[i], scores[i],
+					usernames[i].equals(manager.getUsername())));
 		}
+	}
+
+	public void updateTurn(String username) {
+		for (int i = 0; i < players.size(); i++) {
+			Object o = players.get(i);
+			if (o instanceof PlayUI_Player) {
+				PlayUI_Player p = (PlayUI_Player) o;
+				if (p.getUsername().equals(username)) {
+					p.setTurn(true);
+				} else {
+					p.setTurn(false);
+				}
+			}
+		}
+		lPlayers.repaint();
+	}
+
+	public void displayChat(String username, String message) {
+		txtChat.append(username + ": " + message + "\n");
 	}
 }

@@ -23,7 +23,6 @@ import javax.imageio.ImageIO;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
@@ -34,7 +33,7 @@ import javax.swing.WindowConstants;
  * 
  * @author Tran Viet Son
  */
-public class LoginUI extends JFrame implements ActionListener {
+public class LoginUI extends RootUI implements ActionListener {
 	private static final long serialVersionUID = 2824207873393605683L;
 	private final UIManager manager;
 	private JPasswordField txtPassword;

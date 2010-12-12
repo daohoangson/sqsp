@@ -156,6 +156,10 @@ public class GameUser implements Runnable {
 			case GameMessage.GO:
 				roomGo(m.getParamAsInt("Location"));
 				break;
+			/* MISC */
+			case GameMessage.CHAT:
+				roomChat(m.getParam("Content"));
+				break;
 			}
 		}
 	}
@@ -169,6 +173,12 @@ public class GameUser implements Runnable {
 	private void roomGo(int location) {
 		if (room != null) {
 			room.onUserGo(this, location);
+		}
+	}
+
+	private void roomChat(String message) {
+		if (room != null) {
+			room.onUserChat(this, message);
 		}
 	}
 

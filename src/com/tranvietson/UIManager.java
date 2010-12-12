@@ -11,6 +11,8 @@ public interface UIManager {
 	 */
 	public void onLogin(String username, String password);
 
+	public String getUsername();
+
 	/**
 	 * Changes ready state of current user
 	 * 
@@ -20,6 +22,8 @@ public interface UIManager {
 	 */
 	public void onReadyChange(boolean ready);
 
+	public boolean isReady();
+
 	/**
 	 * Sends the request to flip the specific card for current user
 	 * 
@@ -27,4 +31,6 @@ public interface UIManager {
 	 *            the id of the card, actually the offset value (zero based)
 	 */
 	public void onFlip(int cardId);
+
+	public void onChat(String message);
 }

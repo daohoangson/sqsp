@@ -74,12 +74,19 @@ public class GameRoom extends GameUserList implements Runnable {
 		m.addParam("Status", getStatus());
 	}
 
-	public void buildScoresMessage(GameMessage m) {
+	public void buildScoresMessage(GameMessage m, boolean isWonMessage) {
+		GameUser top = null;
 		GameUser[] users = getUsersArray();
 		m.addParam("Users", users.length);
 		for (int i = 0; i < users.length; i++) {
 			m.addParam("User" + i, users[i].getUsername());
 			m.addParam("Score" + i, users[i].getScore());
+			if (top == null || top.getScore() < users[i].getScore()) {
+				top = users[i];
+			}
+		}
+		if (isWonMessage) {
+			m.addParam("Username", top.getUsername());
 		}
 	}
 
@@ -107,9 +114,10 @@ public class GameRoom extends GameUserList implements Runnable {
 		broadcast(state);
 	}
 
-	public void broadcastTurn(String username) {
+	public void broadcastTurn(String username, int i) {
 		GameMessage turn = new GameMessage(GameMessage.TURN);
 		turn.addParam("Turn", username);
+		turn.addParam("Turn-Number", i + 1);
 		broadcast(turn);
 	}
 
@@ -129,7 +137,7 @@ public class GameRoom extends GameUserList implements Runnable {
 
 	public void broadcastScores() {
 		GameMessage scored = new GameMessage(GameMessage.SCORED);
-		buildScoresMessage(scored);
+		buildScoresMessage(scored, false);
 		broadcast(scored);
 	}
 
@@ -231,7 +239,7 @@ public class GameRoom extends GameUserList implements Runnable {
 		int[] openedCodes = new int[2];
 		for (int i = 0; i < openedCodes.length; i++) {
 			inTurnLocation = -1;
-			broadcastTurn(user.getUsername());
+			broadcastTurn(user.getUsername(), i);
 			// broadcasted, we now wait...
 
 			int timer = GameRoom.CFG_TURN_INTERVAL;
@@ -311,7 +319,7 @@ public class GameRoom extends GameUserList implements Runnable {
 	}
 
 	public void onUserChanged(GameUser user) {
-		if (users.size() > 1 && isEveryoneReady()) {
+		if (users.size() > 0 && isEveryoneReady()) {
 			prepareToPlay();
 		}
 		broadcastState();
@@ -321,6 +329,13 @@ public class GameRoom extends GameUserList implements Runnable {
 		if (user == inTurnUser) {
 			inTurnLocation = location;
 		}
+	}
+
+	public void onUserChat(GameUser user, String message) {
+		GameMessage bm = new GameMessage(GameMessage.CHATTED);
+		bm.addParam("Username", user.getUsername());
+		bm.addParam("Content", message);
+		broadcast(bm);
 	}
 
 	public void run() {
@@ -342,7 +357,7 @@ public class GameRoom extends GameUserList implements Runnable {
 				}
 				if (isFinished()) {
 					GameMessage won = new GameMessage(GameMessage.WON);
-					buildScoresMessage(won);
+					buildScoresMessage(won, true);
 					broadcast(won);
 
 					GameIO.debug(this + " ended a game");
