@@ -2,10 +2,20 @@ package com.tranvietson;
 
 import java.awt.Dimension;
 import java.awt.GridLayout;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 
+import javax.imageio.ImageIO;
 import javax.swing.DefaultListModel;
+
+/**
+ * 
+ * @author Tran Viet Son
+ */
 
 public class PlayUI extends javax.swing.JFrame implements ActionListener {
 
@@ -44,10 +54,28 @@ public class PlayUI extends javax.swing.JFrame implements ActionListener {
 		lbl2 = new javax.swing.JLabel();
 		gameTurn = new javax.swing.JList(model);
 
+		setDefaultLookAndFeelDecorated(true);
 		setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 		setFocusableWindowState(true);
 		setTitle("Game Play");
 		setMinimumSize(new java.awt.Dimension(980, 680));
+
+		Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
+		int w = this.getSize().width;
+		int h = this.getSize().height;
+		int x = (d.width - w) / 2;
+		int y = (d.height - h) / 2;
+		this.setLocation(x, y);
+
+		BufferedImage icon = null;
+		try {
+			File imageFile = new File("images\\card.jpg");
+			icon = ImageIO.read(imageFile);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		setIconImage(icon);
 
 		gamePn.setBorder(javax.swing.BorderFactory
 				.createTitledBorder("Game Play"));
@@ -258,11 +286,12 @@ public class PlayUI extends javax.swing.JFrame implements ActionListener {
 		 * Draw cards in playboard
 		 */
 		cards = new Card[size];
-		gamePn.setLayout(new GridLayout(20, 20, 1, 1));
+		int widthSize = (int) (Math.ceil(Math.sqrt(size)));
+		gamePn.setLayout(new GridLayout(widthSize, 0, 1, 1));
 		for (int i = 0; i < size; i++) {
 			Card card = new Card(i);
-			card.setMaximumSize(new Dimension(48, 48));
-			card.setMinimumSize(new Dimension(48, 48));
+			card.setMaximumSize(new Dimension(32, 32));
+			card.setMinimumSize(new Dimension(32, 32));
 			gamePn.add(card);
 
 			cards[i] = card;
