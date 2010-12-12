@@ -57,7 +57,11 @@ public class GameParamList {
 	 * @return parameter value or null
 	 */
 	public String getParam(String key) {
-		return params.get(key);
+		if (params.containsKey(key)) {
+			return params.get(key);
+		} else {
+			return null;
+		}
 	}
 
 	/**

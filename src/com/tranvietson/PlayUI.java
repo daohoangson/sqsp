@@ -134,6 +134,10 @@ public class PlayUI extends RootUI implements ActionListener {
 	public void updateScores(String[] usernames, int[] scores) {
 		players.clear();
 		for (int i = 0; i < usernames.length; i++) {
+			if (scores[i] < 0) {
+				// invalid score
+				continue;
+			}
 			players.addElement(new PlayUI_Player(usernames[i], scores[i],
 					usernames[i].equals(manager.getUsername())));
 		}

@@ -140,10 +140,14 @@ public class GameRoom extends GameUserList implements Runnable {
 		broadcast(goDone);
 	}
 
-	public void broadcastScores() {
-		GameMessage scored = new GameMessage(GameMessage.SCORED);
+	public void broadcastScores(int code) {
+		GameMessage scored = new GameMessage(code);
 		buildScoresMessage(scored, false);
 		broadcast(scored);
+	}
+
+	public void broadcastScored() {
+		broadcastScores(GameMessage.SCORED);
 	}
 
 	private boolean isEveryoneReady() {
@@ -398,6 +402,15 @@ public class GameRoom extends GameUserList implements Runnable {
 		if (users.size() == 1) {
 			host = getUserByOffset(0);
 		}
+
+		switch (status) {
+		case GameMessage.RS_WAITING:
+			broadcastState();
+			break;
+		case GameMessage.RS_PLAYING:
+			broadcastScores(GameMessage.SCORES);
+			break;
+		}
 	}
 
 	@Override
@@ -410,6 +423,15 @@ public class GameRoom extends GameUserList implements Runnable {
 			} else {
 				host = null;
 			}
+		}
+
+		switch (status) {
+		case GameMessage.RS_WAITING:
+			broadcastState();
+			break;
+		case GameMessage.RS_PLAYING:
+			broadcastScores(GameMessage.SCORES);
+			break;
 		}
 
 		return removed;

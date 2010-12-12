@@ -40,6 +40,7 @@ public class GameMessage extends GameParamList {
 	public final static int GO_MOVED = 921;
 	public final static int GO_DONE = 922;
 	public final static int SCORED = 923;
+	public final static int SCORES = 924;
 	public final static int WON = 930;
 
 	public final static int CHAT = 100;
@@ -182,6 +183,9 @@ public class GameMessage extends GameParamList {
 		if (code.equals("SCORED")) {
 			return GameMessage.SCORED;
 		}
+		if (code.equals("SCORES")) {
+			return GameMessage.SCORES;
+		}
 		if (code.equals("WON")) {
 			return GameMessage.WON;
 		}
@@ -244,6 +248,8 @@ public class GameMessage extends GameParamList {
 			return "GO_DONE";
 		case SCORED:
 			return "SCORED";
+		case SCORES:
+			return "SCORES";
 		case WON:
 			return "WON";
 

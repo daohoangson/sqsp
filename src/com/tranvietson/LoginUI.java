@@ -15,11 +15,7 @@ import java.awt.Component;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
 
-import javax.imageio.ImageIO;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -76,17 +72,6 @@ public class LoginUI extends RootUI implements ActionListener {
 
 		setTitle("Log In");
 		setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-
-		BufferedImage icon = null;
-		try {
-			File imageFile = new File("images\\card.jpg");
-			icon = ImageIO.read(imageFile);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
-		setIconImage(icon);
-
 		setResizable(false);
 		add(pnOutter);
 		pack();

@@ -12,7 +12,7 @@ import com.tranvietson.UIManager;
 import com.tranvietson.WaitUI;
 
 public class Client implements GameEventListener, UIManager {
-	private GameClient gameClient;
+	protected GameClient gameClient;
 	private LoginUI loginUI = null;
 	private WaitUI waitUI = null;
 	private PlayUI playUI = null;
@@ -54,7 +54,7 @@ public class Client implements GameEventListener, UIManager {
 			// TODO: Implement the room selecting feature
 			int rooms = gameClient.rooms();
 			if (rooms == 0) {
-				gameClient.roomMake(40);
+				gameClient.roomMake(400);
 			} else {
 				GameParamList roomInfo = gameClient.roomInfo(0);
 				gameClient.roomJoin(roomInfo.getParamAsInt("RoomID"));
@@ -98,7 +98,6 @@ public class Client implements GameEventListener, UIManager {
 			int code = ge.gameMessage.getParamAsInt("Code");
 			if (playUI != null) {
 				playUI.flipCard(username, location, code);
-				playUI.setTitle("");
 			}
 			break;
 		case GameEvent.GO_DONE:
@@ -111,6 +110,11 @@ public class Client implements GameEventListener, UIManager {
 				int[] locations = gameClient.getOpenedLocations();
 				playUI.destroyCards(locations[0], locations[1]);
 
+				updateScores();
+			}
+			break;
+		case GameEvent.SCORES:
+			if (playUI != null) {
 				updateScores();
 			}
 			break;
@@ -141,11 +145,12 @@ public class Client implements GameEventListener, UIManager {
 
 	@Override
 	public void onLogin(String username, String password) {
-		if (loginUI != null && loginUI.isVisible()
+		if (gameClient.getUsername() == null
 				&& gameClient.login(username, password)) {
-			// only login when the loginUI is visible
-			loginUI.setVisible(false);
-			loginUI = null;
+			if (loginUI != null) {
+				loginUI.setVisible(false);
+				loginUI = null;
+			}
 		}
 	}
 
@@ -156,7 +161,7 @@ public class Client implements GameEventListener, UIManager {
 
 	@Override
 	public void onReadyChange(boolean ready) {
-		if (waitUI != null && gameClient.getRoomId() > 0) {
+		if (gameClient.getRoomId() > 0) {
 			// only set ready if we are in a room
 			gameClient.setReady(ready);
 		}

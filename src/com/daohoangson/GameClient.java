@@ -66,8 +66,8 @@ public class GameClient extends GameEventSource implements Runnable {
 	 * a new thread via constructor
 	 */
 	public synchronized void run() {
-		while (true) {
-			try {
+		try {
+			while (true) {
 				GameIO.debug("Waiting in loop", 5);
 				GameMessage m = io.read();
 
@@ -83,43 +83,47 @@ public class GameClient extends GameEventSource implements Runnable {
 								+ m.getParamAsInt("RoomID"), 4);
 						io.writeError(GameMessage.E_INVALID);
 					}
-					continue;
+					break;
 				case GameMessage.TURN:
 					// got a TURN, prepare to GO
 					if (m.getParam("Turn").equals(username)) {
 						turnStart();
 					}
 					fireGameEvent(GameEvent.TURN, m);
-					continue;
+					break;
 				case GameMessage.GO_MOVED:
 					turnStop();
 					aiUpdate(m);
 					fireGameEvent(GameEvent.GO_MOVED, m);
-					continue;
+					break;
 				case GameMessage.GO_DONE:
 					turnStop();
 					fireGameEvent(GameEvent.GO_DONE, m);
-					continue;
+					break;
 				case GameMessage.SCORED:
 					turnStop();
 					aiUpdate(m);
 					readScoreMessage(m);
 					fireGameEvent(GameEvent.SCORED, m);
-					continue;
+					break;
+				case GameMessage.SCORES:
+					readScoreMessage(m);
+					fireGameEvent(GameEvent.SCORES, m);
+					break;
 				case GameMessage.WON:
 					turnStop();
 					readScoreMessage(m);
 					fireGameEvent(GameEvent.WON, m);
-					continue;
+					break;
 				case GameMessage.CHATTED:
 					fireGameEvent(GameEvent.CHATTED, m);
-					continue;
+					break;
 				}
-			} catch (IOException e) {
-				e.printStackTrace();
-				fireGameEvent(GameEvent.IOException);
-				return;
+
 			}
+		} catch (IOException e) {
+			e.printStackTrace();
+			fireGameEvent(GameEvent.IOException);
 		}
 	}
 
@@ -353,7 +357,8 @@ public class GameClient extends GameEventSource implements Runnable {
 		int tmp = m.getParamAsInt("RoomID");
 		if (tmp > 0) {
 			roomId = tmp;
-			host = m.getParam("Host").equals(username);
+			host = m.getParam("Host") != null
+					&& m.getParam("Host").equals(username);
 			GameParamList oldRoomInfo = roomInfo;
 			roomInfo = new GameParamList(m);
 
@@ -390,32 +395,29 @@ public class GameClient extends GameEventSource implements Runnable {
 	 *            the SCORED message
 	 */
 	private void readScoreMessage(GameMessage m) {
-		if (m.is(GameMessage.SCORED) || m.is(GameMessage.WON)) {
-			GameParamList oldScores = scores;
-			scores = new GameParamList(m);
+		GameParamList oldScores = scores;
+		scores = new GameParamList(m);
 
-			if (oldScores != null) {
-				int oldUserId = findUserId(oldScores, username);
-				int oldScore = -1;
-				if (oldUserId > -1) {
-					oldScore = oldScores.getParamAsInt("Score" + oldUserId);
-				}
-
-				int newUserId = findUserId(scores, username);
-				int newScore = -1;
-				if (newUserId > -1) {
-					newScore = scores.getParamAsInt("Score" + newUserId);
-				}
-
-				if (newScore != oldScore) {
-					fireGameEvent(GameEvent.OWN_SCORED);
-				}
+		if (oldScores != null) {
+			int oldUserId = findUserId(oldScores, username);
+			int oldScore = -1;
+			if (oldUserId > -1) {
+				oldScore = oldScores.getParamAsInt("Score" + oldUserId);
 			}
 
-			GameIO.debug("Updated scores", 3);
-		} else {
-			GameIO.debug("readScoreMessage invalid", 4);
+			int newUserId = findUserId(scores, username);
+			int newScore = -1;
+			if (newUserId > -1) {
+				newScore = scores.getParamAsInt("Score" + newUserId);
+			}
+
+			if (newScore != oldScore) {
+				fireGameEvent(GameEvent.OWN_SCORED);
+			}
 		}
+
+		GameIO.debug("Updated scores", 3);
+
 	}
 
 	/**

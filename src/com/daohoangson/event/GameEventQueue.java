@@ -25,11 +25,8 @@ public class GameEventQueue implements Runnable {
 	}
 
 	public void run() {
-		synchronized (this) {
-			while (true) {
-				while (queue.size() == 0) {
-					// wait
-				}
+		while (true) {
+			if (queue.size() > 0) {
 				GameEventQueueItem q = queue.get(0);
 				if (q != null) {
 					while (q.i.hasNext()) {

@@ -41,7 +41,6 @@ public class GameUser implements Runnable {
 	public void leaveRoom() {
 		if (room != null) {
 			room.removeUser(this);
-			room.broadcastState();
 			room = null;
 		}
 	}
@@ -109,11 +108,12 @@ public class GameUser implements Runnable {
 			case GameMessage.ROOM_MAKE:
 				GameRoom room = new GameRoom(server, this, m
 						.getParamAsInt("Room-Size"));
-				joinRoom(room);
 
 				response = new GameMessage(GameMessage.OK);
 				room.buildRoomInfoMessage(response);
 				io.write(response);
+
+				joinRoom(room);
 				break;
 			case GameMessage.ROOM_INFO:
 			case GameMessage.ROOM_JOIN:
@@ -124,15 +124,16 @@ public class GameUser implements Runnable {
 				} else {
 					int roomId = m.getParamAsInt("RoomID");
 					roomInfo = server.getRoom(roomId);
-					if (roomInfo != null) {
-						joinRoom(roomInfo);
-					}
 				}
 
 				if (roomInfo != null) {
 					response = new GameMessage(GameMessage.OK);
 					roomInfo.buildRoomInfoMessage(response);
 					io.write(response);
+
+					if (m.getCode() == GameMessage.ROOM_JOIN) {
+						joinRoom(roomInfo);
+					}
 				} else {
 					io.writeError(GameMessage.E_ROOM_NOT_FOUND);
 				}
@@ -187,7 +188,7 @@ public class GameUser implements Runnable {
 	public void setScore(int score) {
 		if (room != null) {
 			this.score = score;
-			room.broadcastScores();
+			room.broadcastScored();
 		}
 	}
 
@@ -202,10 +203,10 @@ public class GameUser implements Runnable {
 	}
 
 	public int getScore() {
-		if (room != null) {
+		if (room != null && active) {
 			return score;
 		} else {
-			return 0;
+			return -1;
 		}
 	}
 
