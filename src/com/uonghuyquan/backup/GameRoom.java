@@ -24,7 +24,9 @@ public class GameRoom extends GameUserList implements Runnable {
 	private GameUser inTurnUser = null;
 	private int inTurnLocation = -1;
 
+	static int CFG_TYPES = 10;
 	static int CFG_SCORE_PER_MATCHED = 1;
+	static int CFG_SCORE_BONUS = 1;
 	static int CFG_CARD_CLOSE_TIME = 2500;
 	static int CFG_GAME_END_INTERVAL = 2500;
 	static int CFG_TURN_INTERVAL = 15000;
@@ -160,7 +162,7 @@ public class GameRoom extends GameUserList implements Runnable {
 
 		// generate array of card codes
 		Random rand = new Random();
-		int cardTypes = Math.min(40, size / 2);
+		int cardTypes = Math.min(GameRoom.CFG_TYPES, size / 2);
 		cardCodesArray = new int[size];
 		for (int i = 0; i < size; i++) {
 			cardCodesArray[i] = -1;
@@ -234,7 +236,7 @@ public class GameRoom extends GameUserList implements Runnable {
 		return next;
 	}
 
-	private void playUser(GameUser user) {
+	private void playUser(GameUser user, int count) {
 		inTurnUser = user;
 
 		GameIO.debug(this + ": Starting turn for " + user.getUsername(), 2);
@@ -294,17 +296,25 @@ public class GameRoom extends GameUserList implements Runnable {
 			if (openedLocations[0] != openedLocations[1]) {
 				// valid locations
 				if (openedCodes[0] == openedCodes[1]) {
+					int scored = 0;
 					// scored!
-					user.increaseScore(GameRoom.CFG_SCORE_PER_MATCHED);
+					scored += GameRoom.CFG_SCORE_PER_MATCHED;
+
 					// mark done for cards
 					cardCodesArray[openedLocations[0]] = -1;
 					cardCodesArray[openedLocations[1]] = -1;
+					// bonus
+					if (count == 3) {
+						scored += GameRoom.CFG_SCORE_BONUS;
+						count = 0; // reset
+					}
 
+					user.increaseScore(scored);
 					GameIO.debug(user.getUsername() + " scored!", 3);
 
 					if (!isFinished()) {
 						// let the current player continue
-						playUser(user);
+						playUser(user, count + 1);
 					}
 				}
 			}
@@ -352,7 +362,7 @@ public class GameRoom extends GameUserList implements Runnable {
 					int userId = nextUserId();
 					if (userId > -1) {
 						GameUser user = usersArray[userId];
-						playUser(user);
+						playUser(user, 1);
 						lastUserId = userId;
 					} else {
 						break;

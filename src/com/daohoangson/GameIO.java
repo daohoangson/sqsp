@@ -206,7 +206,7 @@ public class GameIO {
 	 * @param level
 	 *            the debug level
 	 */
-	public static synchronized void debug(String message, int level) {
+	public static void debug(String message, int level) {
 		int maxLevel = 5;
 		if (level <= maxLevel) {
 			System.out.println(message);

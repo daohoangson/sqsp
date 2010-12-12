@@ -114,8 +114,6 @@ public class GameUser implements Runnable {
 				response = new GameMessage(GameMessage.OK);
 				room.buildRoomInfoMessage(response);
 				io.write(response);
-
-				this.room.broadcastState();
 				break;
 			case GameMessage.ROOM_INFO:
 			case GameMessage.ROOM_JOIN:
@@ -135,10 +133,6 @@ public class GameUser implements Runnable {
 					response = new GameMessage(GameMessage.OK);
 					roomInfo.buildRoomInfoMessage(response);
 					io.write(response);
-
-					if (this.room != null) {
-						this.room.broadcastState();
-					}
 				} else {
 					io.writeError(GameMessage.E_ROOM_NOT_FOUND);
 				}
@@ -198,7 +192,9 @@ public class GameUser implements Runnable {
 	}
 
 	public void increaseScore(int delta) {
-		setScore(score + delta);
+		if (delta > 0) {
+			setScore(score + delta);
+		}
 	}
 
 	public void resetScore() {

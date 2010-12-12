@@ -277,6 +277,10 @@ public class GameClient extends GameEventSource implements Runnable {
 		write(m);
 	}
 
+	public void checkRoomState() {
+		setReady(ready);
+	}
+
 	/**
 	 * Prepares for client's turn
 	 */

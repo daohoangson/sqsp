@@ -37,6 +37,7 @@ public class Client implements GameEventListener, UIManager {
 		GameIO.debug("Client.doWait()");
 		waitUI = new WaitUI(this);
 		waitUI.setVisible(true);
+		gameClient.checkRoomState();
 	}
 
 	public void doPlay() {

@@ -62,6 +62,7 @@ public class LoginUI extends RootUI implements ActionListener {
 		lbPassword.setText("Password");
 		pnInner.add(lbPassword);
 		txtPassword.addActionListener(this);
+		txtPassword.setEnabled(false);
 		pnInner.add(txtPassword);
 
 		btnLogIn.setText("Log In");
@@ -98,7 +99,11 @@ public class LoginUI extends RootUI implements ActionListener {
 	}
 
 	public String getPassword() {
-		return new String(txtPassword.getPassword());
+		if (txtPassword.isEnabled()) {
+			return new String(txtPassword.getPassword());
+		} else {
+			return "password";
+		}
 	}
 
 	@Override
