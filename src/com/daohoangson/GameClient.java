@@ -115,8 +115,8 @@ public class GameClient extends GameEventSource implements Runnable {
 					continue;
 				}
 			} catch (IOException e) {
+				e.printStackTrace();
 				fireGameEvent(GameEvent.IOException);
-				GameIO.debug(e.toString());
 				return;
 			}
 		}

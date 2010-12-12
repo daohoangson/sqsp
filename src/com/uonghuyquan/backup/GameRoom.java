@@ -3,6 +3,7 @@ package com.uonghuyquan.backup;
 import java.io.IOException;
 import java.util.Random;
 
+import com.daohoangson.GameException;
 import com.daohoangson.GameIO;
 import com.daohoangson.GameMessage;
 
@@ -251,7 +252,7 @@ public class GameRoom extends GameUserList implements Runnable {
 				}
 				timer -= GameRoom.CFG_TURN_INTERVAL_STEP;
 				GameIO.debug(this + ": Timer for " + user + " = " + timer, 5);
-			} while (timer > 0 && inTurnLocation == -1);
+			} while (timer > 0 && inTurnLocation == -1 && user.isActive());
 
 			if (inTurnLocation != -1) {
 				// a GO has been received
@@ -319,7 +320,7 @@ public class GameRoom extends GameUserList implements Runnable {
 	}
 
 	public void onUserChanged(GameUser user) {
-		if (users.size() > 0 && isEveryoneReady()) {
+		if (users.size() > 1 && isEveryoneReady()) {
 			prepareToPlay();
 		}
 		broadcastState();
@@ -376,5 +377,29 @@ public class GameRoom extends GameUserList implements Runnable {
 	@Override
 	public String toString() {
 		return "Room #" + id;
+	}
+
+	@Override
+	public void addUser(GameUser user) throws GameException {
+		super.addUser(user);
+
+		if (users.size() == 1) {
+			host = getUserByOffset(0);
+		}
+	}
+
+	@Override
+	public boolean removeUser(GameUser user) {
+		boolean removed = super.removeUser(user);
+
+		if (removed && host == user) {
+			if (users.size() > 0) {
+				host = getUserByOffset(0);
+			} else {
+				host = null;
+			}
+		}
+
+		return removed;
 	}
 }

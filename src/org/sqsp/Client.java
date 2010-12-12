@@ -126,6 +126,7 @@ public class Client implements GameEventListener, UIManager {
 				playUI.displayChat(ge.gameMessage.getParam("Username"),
 						ge.gameMessage.getParam("Content"));
 			}
+			break;
 		case GameEvent.IOException:
 			RootUI.error("IOException occured. Bye bye");
 			System.exit(1);
