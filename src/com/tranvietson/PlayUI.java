@@ -96,6 +96,7 @@ public class PlayUI extends RootUI implements ActionListener {
 		pane.add(pnRight, BorderLayout.LINE_END);
 
 		setTitle("Play");
+		setDefaultLookAndFeelDecorated(true);
 		setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 		pack();
 		setLocationRelativeTo(null);
