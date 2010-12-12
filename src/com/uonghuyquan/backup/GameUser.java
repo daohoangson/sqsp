@@ -188,6 +188,7 @@ public class GameUser implements Runnable {
 	public void setScore(int score) {
 		if (room != null) {
 			this.score = score;
+			room.onSystemMessage(getUsername() + "'s score is now " + score);
 			room.broadcastScored();
 		}
 	}

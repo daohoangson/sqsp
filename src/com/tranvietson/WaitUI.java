@@ -46,7 +46,6 @@ public class WaitUI extends RootUI implements ActionListener {
 		pane.add(pnRight, BorderLayout.LINE_END);
 
 		setTitle("Wait for other players");
-		setDefaultLookAndFeelDecorated(true);
 		setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 		setResizable(false);
 		pack();

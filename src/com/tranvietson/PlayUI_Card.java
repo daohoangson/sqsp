@@ -61,8 +61,8 @@ public class PlayUI_Card extends JButton {
 						int dy1 = (h - s) / 2;
 						int dx2 = dx1 + s;
 						int dy2 = dy1 + s;
-						g.drawImage(sprite, dx1, dy1, dx2, dy2, 0, 0, 48, 48,
-								null);
+						g.drawImage(sprite, dx1, dy1, dx2, dy2, 0, 0, sprite
+								.getWidth(null), sprite.getHeight(null), null);
 					}
 				}
 			}

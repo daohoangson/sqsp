@@ -311,6 +311,9 @@ public class GameRoom extends GameUserList implements Runnable {
 					if (count == 3) {
 						scored += GameRoom.CFG_SCORE_BONUS;
 						count = 0; // reset
+						onSystemMessage(user.getUsername()
+								+ " got bonus point ("
+								+ GameRoom.CFG_SCORE_BONUS + ")");
 					}
 
 					user.increaseScore(scored);
@@ -351,6 +354,14 @@ public class GameRoom extends GameUserList implements Runnable {
 	public void onUserChat(GameUser user, String message) {
 		GameMessage bm = new GameMessage(GameMessage.CHATTED);
 		bm.addParam("Username", user.getUsername());
+		bm.addParam("Content", message);
+		broadcast(bm);
+	}
+
+	public void onSystemMessage(String message) {
+		GameMessage bm = new GameMessage(GameMessage.CHATTED);
+		bm.addParam("From-System", 1);
+		bm.addParam("Username", toString());
 		bm.addParam("Content", message);
 		broadcast(bm);
 	}
@@ -403,6 +414,8 @@ public class GameRoom extends GameUserList implements Runnable {
 			host = getUserByOffset(0);
 		}
 
+		onSystemMessage(user.getUsername() + " joined " + this);
+
 		switch (status) {
 		case GameMessage.RS_WAITING:
 			broadcastState();
@@ -424,6 +437,8 @@ public class GameRoom extends GameUserList implements Runnable {
 				host = null;
 			}
 		}
+
+		onSystemMessage(user.getUsername() + " left " + this);
 
 		switch (status) {
 		case GameMessage.RS_WAITING:

@@ -23,6 +23,7 @@ public class GameServerThread extends Thread {
 	}
 
 	// Here every thread is assigned to a user, created in JServer.
+	@SuppressWarnings("deprecation")
 	@Override
 	public void run() {
 

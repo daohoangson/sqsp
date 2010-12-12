@@ -48,6 +48,7 @@ public class PlayUI extends RootUI implements ActionListener {
 		JScrollPane spnPlayers = new JScrollPane(lPlayers);
 		txtChat = new JTextArea();
 		txtChat.setEditable(false);
+		txtChat.setLineWrap(true);
 		JScrollPane spnChat = new JScrollPane(txtChat);
 		spnChat.setPreferredSize(new Dimension(250, 250));
 		spnChat.getVerticalScrollBar().addAdjustmentListener(
@@ -96,7 +97,6 @@ public class PlayUI extends RootUI implements ActionListener {
 		pane.add(pnRight, BorderLayout.LINE_END);
 
 		setTitle("Play");
-		setDefaultLookAndFeelDecorated(true);
 		setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 		pack();
 		setLocationRelativeTo(null);
@@ -161,5 +161,9 @@ public class PlayUI extends RootUI implements ActionListener {
 
 	public void displayChat(String username, String message) {
 		txtChat.append(username + ": " + message + "\n");
+	}
+
+	public void displaySystemMessage(String message) {
+		txtChat.append(message + "\n");
 	}
 }

@@ -273,7 +273,7 @@ public class GameMessage extends GameParamList {
 	public void addParam(String line) {
 		String[] parts = line.split(":");
 		if (parts.length == 2) {
-			addParam(parts[0].trim(), parts[1].trim());
+			addParam(parts[0].trim(), GameIO.fromUtf8(parts[1].trim()));
 		}
 	}
 
@@ -298,7 +298,8 @@ public class GameMessage extends GameParamList {
 		Iterator<Entry<String, String>> i = params.entrySet().iterator();
 		while (i.hasNext()) {
 			Entry<String, String> e = i.next();
-			result += e.getKey() + ": " + e.getValue() + "\n";
+			result += e.getKey() + ": "
+					+ GameIO.toUtf8(e.getValue().replace(':', ';')) + "\n";
 		}
 		result += "\n";
 

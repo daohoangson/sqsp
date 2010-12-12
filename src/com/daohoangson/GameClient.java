@@ -314,9 +314,13 @@ public class GameClient extends GameEventSource implements Runnable {
 	}
 
 	public void chat(String message) {
+		if (message.length() == 0) {
+			return;
+		}
+
 		GameMessage chat = new GameMessage(GameMessage.CHAT);
 		chat.addParam("Username", username);
-		chat.addParam("Content", GameIO.toUtf8(message.replace(':', ';')));
+		chat.addParam("Content", message);
 		write(chat);
 	}
 

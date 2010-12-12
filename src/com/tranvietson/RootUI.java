@@ -11,6 +11,7 @@ public abstract class RootUI extends JFrame {
 
 	public RootUI() {
 		RootUI.instance = this;
+		JFrame.setDefaultLookAndFeelDecorated(true);
 	}
 
 	public static void error(String message) {
