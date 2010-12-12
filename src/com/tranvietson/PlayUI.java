@@ -6,6 +6,8 @@ import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.AdjustmentEvent;
+import java.awt.event.AdjustmentListener;
 
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
@@ -46,8 +48,15 @@ public class PlayUI extends RootUI implements ActionListener {
 		JScrollPane spnPlayers = new JScrollPane(lPlayers);
 		txtChat = new JTextArea();
 		txtChat.setEditable(false);
-		txtChat.setPreferredSize(new Dimension(250, 250));
 		JScrollPane spnChat = new JScrollPane(txtChat);
+		spnChat.setPreferredSize(new Dimension(250, 250));
+		spnChat.getVerticalScrollBar().addAdjustmentListener(
+				new AdjustmentListener() {
+					public void adjustmentValueChanged(AdjustmentEvent e) {
+						e.getAdjustable().setValue(
+								e.getAdjustable().getMaximum());
+					}
+				});
 		btnSend = new JButton("Send");
 		btnSend.addActionListener(this);
 		txtMessage = new JTextField();

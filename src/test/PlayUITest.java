@@ -20,7 +20,7 @@ public class PlayUITest {
 					PlayUITest.z = 1;
 				}
 
-				PlayUITest.ui.flipCard("User1", cardId, cardId);
+				PlayUITest.ui.displayChat("me", "blah blah blah");
 			}
 
 			@Override
@@ -57,5 +57,9 @@ public class PlayUITest {
 		PlayUITest.ui.setVisible(true);
 		PlayUITest.ui.updateScores(new String[] { "User1", "User2" },
 				new int[] { 0, 1 });
+
+		for (int i = 0; i < 20; i++) {
+			PlayUITest.ui.displayChat("Some user", "a message");
+		}
 	}
 }
