@@ -54,7 +54,7 @@ public class Client implements GameEventListener, UIManager {
 			// TODO: Implement the room selecting feature
 			int rooms = gameClient.rooms();
 			if (rooms == 0) {
-				gameClient.roomMake(25);
+				gameClient.roomMake(36);
 			} else {
 				GameParamList roomInfo = gameClient.roomInfo(0);
 				gameClient.roomJoin(roomInfo.getParamAsInt("RoomID"));
@@ -128,13 +128,7 @@ public class Client implements GameEventListener, UIManager {
 			break;
 		case GameEvent.CHATTED:
 			if (playUI != null) {
-				if (ge.gameMessage.getParamAsInt("From-System") == 1) {
-					playUI.displaySystemMessage(ge.gameMessage
-							.getParam("Content"));
-				} else {
-					playUI.displayChat(ge.gameMessage.getParam("Username"),
-							ge.gameMessage.getParam("Content"));
-				}
+				playUI.displayChat(ge.gameMessage);
 			}
 			break;
 		case GameEvent.IOException:

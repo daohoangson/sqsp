@@ -1,7 +1,7 @@
 package test;
 
 import com.daohoangson.GameIO;
-import com.uonghuyquan.backup.GameServer;
+import com.uonghuyquan.GameServer;
 
 public class ServerTest {
 	public static void main(String[] args) {

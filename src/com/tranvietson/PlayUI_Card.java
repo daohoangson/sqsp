@@ -2,6 +2,7 @@ package com.tranvietson;
 
 import images.SpriteManager;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Image;
@@ -20,6 +21,7 @@ public class PlayUI_Card extends JButton {
 		this.cardId = cardId;
 
 		setMinimumSize(new Dimension(50, 50));
+		setBackground(Color.LIGHT_GRAY);
 	}
 
 	public void open(int pictureId) {

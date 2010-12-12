@@ -1,7 +1,7 @@
 package org.sqsp;
 
 import com.daohoangson.GameIO;
-import com.uonghuyquan.backup.GameServer;
+import com.uonghuyquan.GameServer;
 
 public class Server {
 	public static void main(String[] args) {

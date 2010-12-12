@@ -53,6 +53,7 @@ public class GameMessage extends GameParamList {
 	public final static int E_INVALID_PASSWORD = 102;
 	public final static int E_LOGGEDIN_USERNAME = 103;
 	public final static int E_ROOM_NOT_FOUND = 104;
+	public final static int E_INVALID_ROOM_SIZE = 201;
 
 	/* Error Code - END */
 

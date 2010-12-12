@@ -1,5 +1,6 @@
 package test;
 
+import com.daohoangson.GameParamList;
 import com.tranvietson.PlayUI;
 import com.tranvietson.UIManager;
 
@@ -20,7 +21,13 @@ public class PlayUITest {
 					PlayUITest.z = 1;
 				}
 
-				PlayUITest.ui.displayChat("me", "blah blah blah");
+				GameParamList params = new GameParamList();
+				params.addParam("Username", "User1");
+				params
+						.addParam("Content",
+								"Blah blah blah bal klajs dflkj alskdjf lkasjdf lkasjd flkjasd fkj");
+				params.addParam("From-System", 1);
+				PlayUITest.ui.displayChat(params);
 			}
 
 			@Override
@@ -58,8 +65,5 @@ public class PlayUITest {
 		PlayUITest.ui.updateScores(new String[] { "User1", "User2" },
 				new int[] { 0, 1 });
 
-		for (int i = 0; i < 20; i++) {
-			PlayUITest.ui.displayChat("Some user", "a message");
-		}
 	}
 }

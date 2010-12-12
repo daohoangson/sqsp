@@ -1,11 +1,16 @@
 package com.tranvietson;
 
+import images.SpriteManager;
+
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -73,10 +78,57 @@ public class WaitUI extends RootUI implements ActionListener {
 
 		if (manager.isReady()) {
 			btReady.setText("Unready");
-			btReady.setIcon(new ImageIcon("images\\unready.png"));
+			btReady.setIcon(new ImageIcon(SpriteManager
+					.getSprite("unready.png")));
 		} else {
 			btReady.setText("Ready");
-			btReady.setIcon(new ImageIcon("images\\ready.png"));
+			btReady
+					.setIcon(new ImageIcon(SpriteManager.getSprite("ready.png")));
 		}
+	}
+}
+
+class WaitUI_Player {
+	private String username;
+	private boolean ready;
+
+	public WaitUI_Player(String username, boolean ready) {
+		this.username = username;
+		this.ready = ready;
+	}
+
+	public String getUsername() {
+		return new String(username);
+	}
+
+	public boolean isReady() {
+		return ready;
+	}
+
+	@Override
+	public String toString() {
+		return getUsername() + " (" + (ready ? "Ready" : "Not Ready") + ")";
+	}
+}
+
+class WaitUI_PlayerRenderer extends DefaultListCellRenderer {
+	private static final long serialVersionUID = 6107692177187617514L;
+
+	@Override
+	public Component getListCellRendererComponent(JList list, Object value,
+			int index, boolean isSelected, boolean cellHasFocus) {
+		if (value instanceof WaitUI_Player) {
+			WaitUI_Player p = (WaitUI_Player) value;
+			super.getListCellRendererComponent(list, value, index, isSelected,
+					cellHasFocus);
+
+			setText(p.toString());
+			setForeground(p.isReady() ? Color.BLACK : Color.WHITE);
+			setBackground(p.isReady() ? Color.GREEN : Color.RED);
+		} else {
+			super.getListCellRendererComponent(list, value, index, isSelected,
+					cellHasFocus);
+		}
+		return this;
 	}
 }
