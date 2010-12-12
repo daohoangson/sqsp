@@ -128,8 +128,8 @@ public class Client implements GameEventListener, UIManager {
 			break;
 		case GameEvent.CHATTED:
 			if (playUI != null) {
-				playUI.displayChat(ge.gameMessage.getParam("Username"),
-						ge.gameMessage.getParam("Content"));
+				playUI.displayChat(ge.gameMessage.getParam("Username"), GameIO
+						.fromUtf8(ge.gameMessage.getParam("Content")));
 			}
 			break;
 		case GameEvent.IOException:
