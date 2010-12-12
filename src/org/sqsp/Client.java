@@ -54,7 +54,7 @@ public class Client implements GameEventListener, UIManager {
 			// TODO: Implement the room selecting feature
 			int rooms = gameClient.rooms();
 			if (rooms == 0) {
-				gameClient.roomMake(400);
+				gameClient.roomMake(25);
 			} else {
 				GameParamList roomInfo = gameClient.roomInfo(0);
 				gameClient.roomJoin(roomInfo.getParamAsInt("RoomID"));
