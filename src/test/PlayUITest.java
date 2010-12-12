@@ -60,7 +60,7 @@ public class PlayUITest {
 
 			}
 
-		}, 400);
+		}, 36);
 		PlayUITest.ui.setVisible(true);
 		PlayUITest.ui.updateScores(new String[] { "User1", "User2" },
 				new int[] { 0, 1 });

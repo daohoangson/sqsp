@@ -7,6 +7,7 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridLayout;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.AdjustmentEvent;
@@ -103,6 +104,16 @@ public class PlayUI extends RootUI implements ActionListener {
 		setTitle("Play");
 		setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 		pack();
+
+		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+		Dimension frameSize = getSize();
+		Dimension leftSize = pnLeft.getSize();
+		int leftWidthDelta = Math.min(leftSize.height - leftSize.width,
+				screenSize.width - frameSize.width);
+		if (leftWidthDelta > 0) {
+			setSize(frameSize.width + leftWidthDelta, frameSize.height);
+		}
+
 		setLocationRelativeTo(null);
 	}
 

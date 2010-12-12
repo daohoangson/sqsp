@@ -43,6 +43,7 @@ public class GameIO {
 	 * Flag to determine this IO object is active or not
 	 */
 	private boolean active = true;
+	private boolean flagTimestamp = false;
 
 	/**
 	 * Constructs from a {@linkplain Socket socket} from server or client
@@ -71,7 +72,7 @@ public class GameIO {
 		if (!active) {
 			return;
 		}
-		out.print(m.prepare());
+		out.print(m.prepare(false, flagTimestamp));
 		out.flush();
 		lastSentMessage = m;
 		GameIO.debug("Sent:\n" + m.toString(), 5);
@@ -185,6 +186,10 @@ public class GameIO {
 		} catch (IOException e) {
 			// ignore
 		}
+	}
+
+	public void setTimestampMode(boolean timestamp) {
+		flagTimestamp = timestamp;
 	}
 
 	public static String toUtf8(String message) {

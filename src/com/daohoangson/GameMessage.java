@@ -1,5 +1,7 @@
 package com.daohoangson;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.Map.Entry;
 
@@ -285,15 +287,25 @@ public class GameMessage extends GameParamList {
 	 *            the flag to always include Params-Count (not recommend)
 	 * @return the {@linkplain String} ready to be sent
 	 */
-	public String prepare(boolean forceCount) {
+	public String prepare(boolean forceCount, boolean timestamp) {
 		String result = "";
 
 		result += GameMessage.lookupCodeToString(code) + " "
 				+ GameMessage.VERSION_STRING + "\n";
 
+		int count = params.size();
+
+		if (timestamp) {
+			result += "Timestamp: "
+					+ new SimpleDateFormat("yyyy/MM/dd HH:mm:ss")
+							.format(new Date()) + "\n";
+			count++;
+		}
+
 		if (!params.containsKey("Params-Count")
 				&& (params.size() > 0 || forceCount)) {
-			result += "Params-Count: " + (1 + params.size()) + "\n";
+			count++;
+			result += "Params-Count: " + count + "\n";
 		}
 
 		Iterator<Entry<String, String>> i = params.entrySet().iterator();
@@ -311,10 +323,13 @@ public class GameMessage extends GameParamList {
 	 * Prepares the message to be sent via socket. Automatically ignore
 	 * Params-Count if not neccessary
 	 * 
+	 * @param flagTimestamp
+	 * @param b
+	 * 
 	 * @return the {{@linkplain String} ready to be sent
 	 */
 	public String prepare() {
-		return prepare(false);
+		return prepare(false, false);
 	}
 
 	@Override
