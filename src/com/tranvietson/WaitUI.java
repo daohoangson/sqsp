@@ -7,6 +7,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.DefaultListModel;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -16,9 +17,9 @@ import javax.swing.WindowConstants;
 
 public class WaitUI extends RootUI implements ActionListener {
 	private static final long serialVersionUID = -8589567281000101357L;
-	private UIManager manager;
+	private final UIManager manager;
 	private JButton btReady;
-	private DefaultListModel players = new DefaultListModel();
+	private final DefaultListModel players = new DefaultListModel();
 
 	public WaitUI(UIManager manager) {
 		this.manager = manager;
@@ -71,9 +72,11 @@ public class WaitUI extends RootUI implements ActionListener {
 		}
 
 		if (manager.isReady()) {
-			btReady.setText("Not Ready");
+			btReady.setText("Unready");
+			btReady.setIcon(new ImageIcon("images\\unready.png"));
 		} else {
 			btReady.setText("Ready");
+			btReady.setIcon(new ImageIcon("images\\ready.png"));
 		}
 	}
 }
