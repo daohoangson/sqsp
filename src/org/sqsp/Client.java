@@ -191,7 +191,7 @@ public class Client implements GameEventListener, UIManager {
 		} else if (args.length == 1) {
 			client = new Client(args[0], GameIO.DEFAULT_PORT);
 		} else {
-			client = new Client(args[1], Integer.valueOf(args[1]));
+			client = new Client(args[0], Integer.valueOf(args[1]));
 		}
 	}
 }
