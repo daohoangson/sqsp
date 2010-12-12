@@ -26,7 +26,7 @@ public class WaitUITest {
 			@Override
 			public void onReadyChange(boolean ready) {
 				// TODO Auto-generated method stub
-
+				System.out.println(ready);
 			}
 
 			@Override

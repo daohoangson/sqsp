@@ -19,6 +19,7 @@ public class GameServer extends GameUserList {
 				try {
 					Socket socket = serverSocket.accept();
 					GameIO io = new GameIO(socket);
+					io.setTimestampMode(true);
 
 					new GameUser(this, io);
 				} catch (Exception e) {

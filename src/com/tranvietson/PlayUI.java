@@ -24,6 +24,7 @@ import javax.swing.JTextField;
 import javax.swing.WindowConstants;
 
 import com.daohoangson.GameParamList;
+import com.uonghuyquan.GameRoom;
 
 public class PlayUI extends RootUI implements ActionListener {
 	private static final long serialVersionUID = 6326821831738404168L;
@@ -125,6 +126,7 @@ public class PlayUI extends RootUI implements ActionListener {
 			PlayUI_Card card = (PlayUI_Card) o;
 			int cardId = card.getCardId();
 			manager.onFlip(cardId);
+			txtMessage.requestFocus();
 		} else if (o == txtMessage || o == btnSend) {
 			String message = txtMessage.getText();
 			txtMessage.setText("");
@@ -154,8 +156,8 @@ public class PlayUI extends RootUI implements ActionListener {
 				// invalid score
 				continue;
 			}
-			players.addElement(new PlayUI_Player(usernames[i], scores[i],
-					usernames[i].equals(manager.getUsername())));
+			players.addElement(new PlayUI_Player(lPlayers, usernames[i],
+					scores[i], usernames[i].equals(manager.getUsername())));
 		}
 	}
 
@@ -179,13 +181,17 @@ public class PlayUI extends RootUI implements ActionListener {
 	}
 }
 
-class PlayUI_Player {
+class PlayUI_Player implements Runnable {
+	private Component container;
 	private String username;
 	private int score;
 	private boolean isThisUser = false;
 	private boolean inTurn = false;
+	private int timer = 0;
 
-	public PlayUI_Player(String username, int score, boolean isThisUser) {
+	public PlayUI_Player(Component container, String username, int score,
+			boolean isThisUser) {
+		this.container = container;
 		this.username = username;
 		this.score = score;
 		this.isThisUser = isThisUser;
@@ -197,6 +203,18 @@ class PlayUI_Player {
 
 	public void setTurn(boolean inTurn) {
 		this.inTurn = inTurn;
+		if (inTurn) {
+			boolean newThread = true;
+			if (timer > 0) {
+				newThread = false;
+			}
+			timer = GameRoom.getTurnInterval();
+			if (newThread) {
+				new Thread(this).start();
+			}
+		} else {
+			timer = 0;
+		}
 	}
 
 	public boolean isInTurn() {
@@ -205,7 +223,23 @@ class PlayUI_Player {
 
 	@Override
 	public String toString() {
-		return username + (isThisUser ? " (You)" : "") + ": " + score;
+		return (isThisUser ? "[You] " + username : username) + ": " + score
+				+ (timer > 0 ? " (remaining time: " + timer / 1000 + "s)" : "");
+	}
+
+	public void run() {
+		timer = GameRoom.getTurnInterval();
+		try {
+			while (timer > 0 && inTurn) {
+				timer -= 1000;
+				Thread.sleep(1000);
+				container.repaint();
+			}
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		timer = 0;
 	}
 }
 

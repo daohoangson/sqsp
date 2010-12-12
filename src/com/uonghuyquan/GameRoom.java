@@ -473,4 +473,8 @@ public class GameRoom extends GameUserList implements Runnable {
 
 		return removed;
 	}
+
+	public static int getTurnInterval() {
+		return GameRoom.CFG_TURN_INTERVAL;
+	}
 }

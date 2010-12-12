@@ -297,7 +297,7 @@ public class GameMessage extends GameParamList {
 
 		if (timestamp) {
 			result += "Timestamp: "
-					+ new SimpleDateFormat("yyyy/MM/dd HH:mm:ss")
+					+ new SimpleDateFormat("yyyyMMdd.HHmmss")
 							.format(new Date()) + "\n";
 			count++;
 		}
