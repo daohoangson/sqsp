@@ -21,7 +21,7 @@ public class PlayUI_Card extends JButton {
 		this.cardId = cardId;
 
 		setMinimumSize(new Dimension(50, 50));
-		setBackground(Color.LIGHT_GRAY);
+		setBackground(Color.WHITE);
 	}
 
 	public void open(int pictureId) {

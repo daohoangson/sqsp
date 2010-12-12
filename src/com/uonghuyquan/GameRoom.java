@@ -298,6 +298,9 @@ public class GameRoom extends GameUserList implements Runnable {
 			} else {
 				// nothing has been received
 				openedCodes[i] = -1;
+				if (timer <= 0) {
+					onSystemMessage(user.getUsername() + " ran out of time!");
+				}
 				break;
 			}
 		}
