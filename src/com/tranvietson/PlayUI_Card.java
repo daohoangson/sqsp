@@ -43,6 +43,10 @@ public class PlayUI_Card extends JButton {
 		return cardId;
 	}
 
+	public boolean isOpened() {
+		return isEnabled() && pictureId != -1;
+	}
+
 	@Override
 	public void paint(Graphics g) {
 		super.paint(g);

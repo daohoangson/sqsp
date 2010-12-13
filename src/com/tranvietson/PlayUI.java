@@ -124,8 +124,10 @@ public class PlayUI extends RootUI implements ActionListener {
 
 		if (o instanceof PlayUI_Card) {
 			PlayUI_Card card = (PlayUI_Card) o;
-			int cardId = card.getCardId();
-			manager.onFlip(cardId);
+			if (!card.isOpened()) {
+				int cardId = card.getCardId();
+				manager.onFlip(cardId);
+			}
 			txtMessage.requestFocus();
 		} else if (o == txtMessage || o == btnSend) {
 			String message = txtMessage.getText();

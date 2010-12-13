@@ -28,6 +28,8 @@ public class PlayUITest {
 								"Blah blah blah bal klajs dflkj alskdjf lkasjdf lkasjd flkjasd fkj");
 				params.addParam("From-System", 1);
 				PlayUITest.ui.displayChat(params);
+
+				PlayUITest.ui.flipCard("User1", cardId, 2);
 			}
 
 			@Override
